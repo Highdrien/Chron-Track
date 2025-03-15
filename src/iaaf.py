@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from type import IaafModel, Time, GENDERS_TYPE, EVENT_TYPE, Coeff
+from type import EVENT_TYPE, GENDERS_TYPE, IaafModel, Time
 
 
 class IAAFCalculator:
@@ -11,9 +11,11 @@ class IAAFCalculator:
             raise FileNotFoundError(
                 f"IAAF scoring formulas not found at {self.filepath}"
             )
-        self.model = IaafModel.model_validate(json.loads(open(self.filepath).read())) 
-    
-    def get_iaaf_score(self, gender: GENDERS_TYPE, event: EVENT_TYPE, time: Time) -> int:
+        self.model = IaafModel.model_validate(json.loads(open(self.filepath).read()))
+
+    def get_iaaf_score(
+        self, gender: GENDERS_TYPE, event: EVENT_TYPE, time: Time
+    ) -> int:
         coeffs = self.model.get_coeffs(gender, event)
         return coeffs.get_iaaf_score(time)
 
