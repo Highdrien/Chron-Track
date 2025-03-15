@@ -1,6 +1,48 @@
 from enum import Enum
 
 from pydantic import BaseModel, RootModel
+from typing_extensions import Self
+
+
+class Time(BaseModel):
+    hours: int
+    minutes: int
+    seconds: float
+
+    def __repr__(self) -> str:
+        return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
+    
+    def get_minutes(self) -> float:
+        """Convert time to minutes"""
+        return self.hours * 60 + self.minutes + self.seconds / 60
+
+    def get_seconds(self) -> float:
+        """Convert time to seconds"""
+        return self.hours * 3600 + self.minutes * 60 + self.seconds
+    
+class Pace(BaseModel):
+    minutes: int
+    seconds: float
+
+    @classmethod
+    def from_time_distance(cls, time: Time, distance: int) -> Self:
+        """
+        Initialize a Pace object from a Time object and a distance.
+
+        Args:
+            time (Time): The Time object representing the performance time.
+            distance (int): The distance covered in kilometers.
+        
+        Returns:
+            Pace: The Pace object calculated from the Time and distance
+        """
+        pace = time.get_minutes() / distance
+        minutes = int(pace)
+        secondes = int((pace - minutes) * 60)
+        return Pace(minutes=minutes, seconds=secondes)
+
+    def __str__(self) -> str:
+        return f"Pace: {self.minutes:02d}'{self.seconds:02.0f} min/km"
 
 
 class Gender(str, Enum):
@@ -68,19 +110,6 @@ class Event(str, Enum):
     eJT = "JT"
     eHeptathlon = "Heptathlon"
     eDecathlon = "Decathlon"
-
-
-class Time(BaseModel):
-    hours: int
-    minutes: int
-    seconds: float
-
-    def __repr__(self) -> str:
-        return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
-
-    def get_seconds(self) -> float:
-        """Convert time to seconds"""
-        return self.hours * 3600 + self.minutes * 60 + self.seconds
 
 
 class Coeff(RootModel[tuple[float, float, float]]):

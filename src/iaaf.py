@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from .type import Event, Gender, IaafModel, Time
+from .basic_class import Event, Gender, IaafModel, Time
 
 
 class IAAFCalculator:

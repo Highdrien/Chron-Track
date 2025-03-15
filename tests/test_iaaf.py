@@ -3,7 +3,7 @@ import json
 import pytest
 
 from src.iaaf import IAAFCalculator
-from src.type import Event, Gender, Time
+from src.basic_class import Event, Gender, Time
 
 
 class TestIAAFCalculator:
