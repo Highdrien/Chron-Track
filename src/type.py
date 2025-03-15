@@ -1,67 +1,73 @@
-from typing import Literal
+from enum import Enum
 
 from pydantic import BaseModel, RootModel
 
-GENDERS_TYPE = Literal["female", "male"]
-EVENT_TYPE = Literal[
-    "100m",
-    "200m",
-    "300m",
-    "400m",
-    "500m",
-    "110mH",
-    "400mH",
-    "4x100m",
-    "4x200m",
-    "4x400m",
-    "600m",
-    "800m",
-    "1000m",
-    "1500m",
-    "Mile",
-    "2000m",
-    "2000mSC",
-    "3000m",
-    "3000mSC",
-    "2 Miles",
-    "5000m",
-    "10,000m",
-    "5km",
-    "10km",
-    "15km",
-    "10 Miles",
-    "20km",
-    "HM",
-    "25km",
-    "30km",
-    "Marathon",
-    "100km",
-    "3kmW",
-    "5kmW",
-    "10kmW",
-    "15kmW",
-    "20kmW",
-    "30kmW",
-    "35kmW",
-    "50kmW",
-    "3000mW",
-    "5000mW",
-    "10,000mW",
-    "15,000mW",
-    "20,000mW",
-    "30,000mW",
-    "35,000mW",
-    "50,000mW",
-    "HJ",
-    "PV",
-    "LJ",
-    "TJ",
-    "SP",
-    "DT",
-    "HT",
-    "JT",
-    "Decathlon",
-]
+
+class Gender(str, Enum):
+    male = "male"
+    female = "female"
+
+
+class Event(str, Enum):
+    e100m = "100m"
+    e200m = "200m"
+    e300m = "300m"
+    e400m = "400m"
+    e500m = "500m"
+    e100mH = "100mH"
+    e110mH = "110mH"
+    e400mH = "400mH"
+    e4x100m = "4x100m"
+    e4x200m = "4x200m"
+    e4x400m = "4x400m"
+    e600m = "600m"
+    e800m = "800m"
+    e1000m = "1000m"
+    e1500m = "1500m"
+    eMile = "Mile"
+    e2000m = "2000m"
+    e2000mSC = "2000mSC"
+    e3000m = "3000m"
+    e3000mSC = "3000mSC"
+    e2Miles = "2 Miles"
+    e5000m = "5000m"
+    e10000m = "10,000m"
+    e5km = "5km"
+    e10km = "10km"
+    e15km = "15km"
+    e10Miles = "10 Miles"
+    e20km = "20km"
+    eHM = "HM"
+    e25km = "25km"
+    e30km = "30km"
+    eMarathon = "Marathon"
+    e100km = "100km"
+    e3kmW = "3kmW"
+    e5kmW = "5kmW"
+    e10kmW = "10kmW"
+    e15kmW = "15kmW"
+    e20kmW = "20kmW"
+    e30kmW = "30kmW"
+    e35kmW = "35kmW"
+    e50kmW = "50kmW"
+    e3000mW = "3000mW"
+    e5000mW = "5000mW"
+    e10000mW = "10,000mW"
+    e15000mW = "15,000mW"
+    e20000mW = "20,000mW"
+    e30000mW = "30,000mW"
+    e35000mW = "35,000mW"
+    e50000mW = "50,000mW"
+    eHJ = "HJ"
+    ePV = "PV"
+    eLJ = "LJ"
+    eTJ = "TJ"
+    eSP = "SP"
+    eDT = "DT"
+    eHT = "HT"
+    eJT = "JT"
+    eHeptathlon = "Heptathlon"
+    eDecathlon = "Decathlon"
 
 
 class Time(BaseModel):
@@ -77,6 +83,8 @@ class Time(BaseModel):
 
 
 class Coeff(RootModel[tuple[float, float, float]]):
+    """Coefficients for IAAF scoring formula"""
+
     pass
 
     def get_iaaf_score(self, time: Time) -> int:
@@ -92,10 +100,12 @@ class Coeff(RootModel[tuple[float, float, float]]):
         return points
 
 
-class IaafModel(RootModel[dict[str, dict[str, Coeff]]]):
+class IaafModel(RootModel[dict[Gender, dict[Event, Coeff]]]):
+    """IAAF scoring model"""
+
     pass
 
-    def get_coeffs(self, gender: GENDERS_TYPE, event: EVENT_TYPE) -> Coeff:
+    def get_coeffs(self, gender: Gender, event: Event) -> Coeff:
         if gender not in self.root:
             raise ValueError(
                 f"{gender=} not found. Genders available: {list(self.root.keys())}"

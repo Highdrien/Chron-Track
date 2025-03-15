@@ -7,7 +7,7 @@ import json
 import pytest
 
 from src.iaaf import IAAFCalculator
-from src.type import EVENT_TYPE, GENDERS_TYPE, Time
+from src.type import Event, Gender, Time
 
 
 class TestIAAFCalculator:
@@ -35,6 +35,6 @@ class TestIAAFCalculator:
         ],
     )
     def test_get_iaaf_score(
-        self, gender: GENDERS_TYPE, event: EVENT_TYPE, time: Time, expected: int
+        self, gender: Gender, event: Event, time: Time, expected: int
     ):
         assert self.iaaf.get_iaaf_score(gender, event, time) == expected

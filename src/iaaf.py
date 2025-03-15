@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from type import EVENT_TYPE, GENDERS_TYPE, IaafModel, Time
+from type import Event, Gender, IaafModel, Time
 
 
 class IAAFCalculator:
@@ -13,14 +13,6 @@ class IAAFCalculator:
             )
         self.model = IaafModel.model_validate(json.loads(open(self.filepath).read()))
 
-    def get_iaaf_score(
-        self, gender: GENDERS_TYPE, event: EVENT_TYPE, time: Time
-    ) -> int:
+    def get_iaaf_score(self, gender: Gender, event: Event, time: Time) -> int:
         coeffs = self.model.get_coeffs(gender, event)
         return coeffs.get_iaaf_score(time)
-
-
-if __name__ == "__main__":
-    iaaf = IAAFCalculator()
-    coeff = iaaf.get_iaaf_score("male", "100m")
-    print(coeff)
