@@ -8,11 +8,13 @@ dependencies = [
     "pydantic>=2.10.6",
 ]
 
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
 ]
+
+[tool.pytest.ini_options]
+minversion = "8.3"
+addopts = "--strict-markers --disable-warnings"
+pythonpath = "."
+testpaths = "tests"

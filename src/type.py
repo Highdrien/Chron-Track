@@ -79,6 +79,7 @@ class Time(BaseModel):
         return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
 
     def get_seconds(self) -> float:
+        """Convert time to seconds"""
         return self.hours * 3600 + self.minutes * 60 + self.seconds
 
 
@@ -88,6 +89,16 @@ class Coeff(RootModel[tuple[float, float, float]]):
     pass
 
     def get_iaaf_score(self, time: Time) -> int:
+        """
+        Calculate the IAAF score based on the given performance time.
+
+        Args:
+            time (Time): The Time of the performance.
+
+        Returns:
+            int: The IAAF score calculated based on the performance time. The score is
+                capped at 1400 and a minimum of 0.
+        """
         performance = time.get_seconds()
         a, b, c = self.root
         points = round(a * performance**2 + b * performance + c)
@@ -106,6 +117,20 @@ class IaafModel(RootModel[dict[Gender, dict[Event, Coeff]]]):
     pass
 
     def get_coeffs(self, gender: Gender, event: Event) -> Coeff:
+        """
+        Retrieve the coefficients for a given gender and event.
+
+        Args:
+            gender (Gender): The gender for which to retrieve coefficients.
+            event (Event): The event for which to retrieve coefficients.
+
+        Returns:
+            Coeff: The coefficients associated with the specified gender and event.
+
+        Raises:
+            ValueError: If the specified gender is not found.
+            ValueError: If the specified event is not found.
+        """
         if gender not in self.root:
             raise ValueError(
                 f"{gender=} not found. Genders available: {list(self.root.keys())}"
