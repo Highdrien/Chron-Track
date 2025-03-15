@@ -40,9 +40,14 @@ class Pace(BaseModel):
         minutes = int(pace)
         secondes = int((pace - minutes) * 60)
         return Pace(minutes=minutes, seconds=secondes)
+    
+    @property
+    def kmh(self) -> float:
+        """Calculate the speed in km/h"""
+        return 60 / (self.minutes + self.seconds / 60)
 
     def __str__(self) -> str:
-        return f"Pace: {self.minutes:02d}'{self.seconds:02.0f} min/km"
+        return f"Pace: {self.minutes:02d}'{self.seconds:02.0f} min/km (={self.kmh:.2f} km/h)"
 
 
 class Gender(str, Enum):
