@@ -1,6 +1,7 @@
 from math import isclose
 
-from src.basic_class import Time, Pace
+from src.basic_class import Pace, Time
+
 
 class TestPace:
     def test_half_marathon(self):
@@ -14,7 +15,7 @@ class TestPace:
         assert p.minutes == 6
         assert p.seconds == 0
         assert p.kmh == 10
-    
+
     def test_5k(self):
         p = Pace.from_time_distance(Time(hours=0, minutes=17, seconds=30), 5)
         assert p.minutes == 3

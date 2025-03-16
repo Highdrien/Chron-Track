@@ -9,9 +9,9 @@ class Time(BaseModel):
     minutes: int
     seconds: float
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
-    
+
     def get_minutes(self) -> float:
         """Convert time to minutes"""
         return self.hours * 60 + self.minutes + self.seconds / 60
@@ -19,7 +19,8 @@ class Time(BaseModel):
     def get_seconds(self) -> float:
         """Convert time to seconds"""
         return self.hours * 3600 + self.minutes * 60 + self.seconds
-    
+
+
 class Pace(BaseModel):
     minutes: int
     seconds: float
@@ -32,7 +33,7 @@ class Pace(BaseModel):
         Args:
             time (Time): The Time object representing the performance time.
             distance (int): The distance covered in kilometers.
-        
+
         Returns:
             Pace: The Pace object calculated from the Time and distance
         """
@@ -40,7 +41,7 @@ class Pace(BaseModel):
         minutes = int(pace)
         secondes = int((pace - minutes) * 60)
         return Pace(minutes=minutes, seconds=secondes)
-    
+
     @property
     def kmh(self) -> float:
         """Calculate the speed in km/h"""
