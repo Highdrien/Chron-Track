@@ -17,10 +17,18 @@ class Perf(BaseModel):
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
+    num_participants: Optional[int] = None
+    rank: Optional[int] = None
 
     @property
     def pace(self) -> Pace:
         return Pace.from_time_distance(self.time, self.distance)
+
+    @property
+    def ratio(self) -> Optional[float]:
+        if self.num_participants is None or self.rank is None:
+            return None
+        return self.rank / self.num_participants
 
     def __str__(self) -> str:
         return f"{self.time} for {self.distance}km on {self.date.date()}"
