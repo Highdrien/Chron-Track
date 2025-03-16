@@ -1,5 +1,7 @@
+import json
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
@@ -17,18 +19,10 @@ class Perf(BaseModel):
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
-    num_participants: Optional[int] = None
-    rank: Optional[int] = None
 
     @property
     def pace(self) -> Pace:
         return Pace.from_time_distance(self.time, self.distance)
-
-    @property
-    def ratio(self) -> Optional[float]:
-        if self.num_participants is None or self.rank is None:
-            return None
-        return self.rank / self.num_participants
 
     def __str__(self) -> str:
         return f"{self.time} for {self.distance}km on {self.date.date()}"
@@ -60,7 +54,15 @@ class Perf(BaseModel):
 
 
 class MainPerf(Perf):
+    num_participants: Optional[int] = None
+    rank: Optional[int] = None
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
+
+    @property
+    def ratio(self) -> Optional[float]:
+        if self.num_participants is None or self.rank is None:
+            return None
+        return self.rank / self.num_participants
 
     def add_sub_perf(self, list_sub_time: list[Time], sub_distance: float) -> None:
         """
@@ -107,6 +109,27 @@ class MainPerf(Perf):
                 self.sub_perfs[(begin_distance, end_distance)] = sub_pref
                 print(f"Added sub_perf: {sub_pref}")
 
+    def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
+        output: dict[str, str | list[dict[str, str]]] = {
+            "time": str(self.time),
+            "distance": str(self.distance),
+            "date": str(self.date),
+            "name_event": str(self.name_event),
+            "location": str(self.location),
+            "url_results": str(self.url_results),
+            "url_strava": str(self.url_strava),
+            "iaaf_score": str(self.iaaf_score),
+            "num_participants": str(self.num_participants),
+            "rank": str(self.rank),
+            "sub_perfs": (
+                [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
+                if self.sub_perfs
+                else "None"
+            ),
+        }
+        # remove None value
+        return {k: v for k, v in output.items() if v != "None"}
+
     def _create_sub_perf(
         self, sub_time: Time, begin_distance: float, end_distance: float
     ) -> "SubPerf":
@@ -134,6 +157,9 @@ class MainPerf(Perf):
                 + f" (sub time:{sub_time} > time:{self.time})"
             )
         sub_data = deepcopy(self.__dict__)
+        del sub_data["sub_perfs"]
+        del sub_data["num_participants"]
+        del sub_data["rank"]
         sub_data["time"] = sub_time
         sub_data["distance"] = end_distance - begin_distance
         sub_data["parent_perf"] = self
@@ -175,6 +201,16 @@ class SubPerf(Perf):
             f"SubPerf of {self.time} between {self.begin_distance} and "
             + f"{self.end_distance}km during {self.distance}km on {self.date.date()}"
         )
+
+    def to_dict(self) -> dict[str, str]:
+        output = {
+            "time": str(self.time),
+            "distance": str(self.distance),
+            "iaaf_score": str(self.iaaf_score),
+            "begin_distance": str(self.begin_distance),
+            "end_distance": str(self.end_distance),
+        }
+        return {k: v for k, v in output.items() if v != "None"}
 
 
 class PerfOfAllTime(BaseModel):
@@ -260,3 +296,10 @@ class PerfOfAllTime(BaseModel):
             )
             perf.iaaf_score = iaaf_score
             print(f"IAAF score for {perf} is {iaaf_score}")
+
+    def save_to_json(self, filepath: Path) -> None:
+        main_perfs: list[MainPerf] = list(
+            filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
+        )
+        data = [perf.to_dict() for perf in main_perfs]
+        json.dump(data, open(filepath, "w"), indent=4)
