@@ -3,6 +3,16 @@ from math import isclose
 from src.time_an_pace import Pace, Time
 
 
+class TestTime:
+    def test_get_minutes(self):
+        t = Time(hours=1, minutes=25, seconds=20)
+        assert t.get_minutes() == 85 + 1 / 3
+
+    def test_get_seconds(self):
+        t = Time(hours=1, minutes=25, seconds=20)
+        assert t.get_seconds() == 5120
+
+
 class TestPace:
     def test_half_marathon(self):
         p = Pace.from_time_distance(Time(hours=1, minutes=25, seconds=22), 21)

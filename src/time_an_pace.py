@@ -18,6 +18,30 @@ class Time(BaseModel):
         """Convert time to seconds"""
         return self.hours * 3600 + self.minutes * 60 + self.seconds
 
+    def __lt__(self, other: "Time") -> bool:
+        """Less than comparison"""
+        return self.get_seconds() < other.get_seconds()
+
+    def __le__(self, other: "Time") -> bool:
+        """Less than or equal comparison"""
+        return self.get_seconds() <= other.get_seconds()
+
+    def __gt__(self, other: "Time") -> bool:
+        """Greater than comparison"""
+        return self.get_seconds() > other.get_seconds()
+
+    def __ge__(self, other: "Time") -> bool:
+        """Greater than or equal comparison"""
+        return self.get_seconds() >= other.get_seconds()
+
+    def __eq__(self, other: "Time") -> bool:
+        """Equality comparison"""
+        return self.get_seconds() == other.get_seconds()
+
+    def __ne__(self, other: "Time") -> bool:
+        """Not equal comparison"""
+        return self.get_seconds() != other.get_seconds()
+
 
 class Pace(BaseModel):
     minutes: int

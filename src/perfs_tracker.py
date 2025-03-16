@@ -51,3 +51,26 @@ class Perf(BaseModel):
 
 class PerfOfAllTime(BaseModel):
     perfs: list[Perf]
+
+    def __len__(self) -> int:
+        return len(self.perfs)
+
+    def add_perf(self, perf: Perf) -> None:
+        self.perfs.append(perf)
+
+    def get_personal_best(self, distance: float) -> Optional[Perf]:
+        """
+        Retrieves the personal best performance for a given distance.
+
+        Args:
+            distance (float): The distance for which to retrieve the personal best.
+
+        Returns:
+            Optional[Perf]: The personal best performance if found, otherwise None.
+        """
+        filtered_perfs = list(
+            filter(lambda perf: perf.distance == distance, self.perfs)
+        )
+        if len(filtered_perfs) == 0:
+            return None
+        return min(filtered_perfs, key=lambda perf: perf.time)
