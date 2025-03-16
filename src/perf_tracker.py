@@ -3,7 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .basic_class import Event, Pace, Time
+from .iaaf import Event
+from .time_an_pace import Pace, Time
 
 
 class Perf(BaseModel):

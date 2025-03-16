@@ -1,6 +1,6 @@
 from math import isclose
 
-from src.basic_class import Pace, Time
+from src.time_an_pace import Pace, Time
 
 
 class TestPace:

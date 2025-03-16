@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from src.basic_class import Event, Gender, Time
-from src.iaaf import IAAFCalculator
+from src.iaaf import Event, Gender, IAAFCalculator
+from src.time_an_pace import Time
 
 
 class TestIAAFCalculator:
