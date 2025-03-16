@@ -7,6 +7,22 @@ class Time(BaseModel):
     minutes: int
     seconds: float
 
+    @classmethod
+    def from_total_seconds(cls, total_seconds: float) -> Self:
+        """
+        Initialize a Time object from a total amount of seconds.
+
+        Args:
+            total_seconds (float): The total amount of seconds to convert.
+
+        Returns:
+            Time: The Time object calculated from the total amount of seconds.
+        """
+        hours = int(total_seconds // 3600)
+        minutes = int((total_seconds % 3600) // 60)
+        seconds = total_seconds % 60
+        return Time(hours=hours, minutes=minutes, seconds=seconds)
+
     def __str__(self) -> str:
         return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
 
@@ -33,6 +49,18 @@ class Time(BaseModel):
     def __ge__(self, other: "Time") -> bool:
         """Greater than or equal comparison"""
         return self.get_seconds() >= other.get_seconds()
+
+    def __add__(self, other: "Time") -> "Time":
+        """Add two Time objects"""
+        total_seconds = self.get_seconds() + other.get_seconds()
+        return Time.from_total_seconds(total_seconds=total_seconds)
+
+    def __sub__(self, other: "Time") -> "Time":
+        """Subtract two Time objects"""
+        if self.get_seconds() < other.get_seconds():
+            raise ValueError("Cannot subtract a larger time from a smaller time")
+        total_seconds = self.get_seconds() - other.get_seconds()
+        return Time.from_total_seconds(total_seconds)
 
 
 class Pace(BaseModel):

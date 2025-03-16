@@ -12,6 +12,27 @@ class TestTime:
         t = Time(hours=1, minutes=25, seconds=20)
         assert t.get_seconds() == 5120
 
+    def test_compare(self):
+        t1 = Time(hours=1, minutes=25, seconds=20)
+        t2 = Time(hours=1, minutes=25, seconds=21)
+        assert t1 < t2
+        assert t1 <= t2
+        assert t2 > t1
+        assert t2 >= t1
+
+    def from_total_seconds(self):
+        num_seconds = 5120
+        t = Time.from_total_seconds(num_seconds)
+        assert t.hours == 1
+        assert t.minutes == 25
+        assert t.seconds == 20
+
+    def test_add(self):
+        t1 = Time(hours=1, minutes=25, seconds=20)
+        t2 = Time(hours=0, minutes=35, seconds=40)
+        t = t1 + t2
+        assert t == Time(hours=2, minutes=1, seconds=0)
+
 
 class TestPace:
     def test_half_marathon(self):
