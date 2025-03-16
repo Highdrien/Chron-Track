@@ -31,7 +31,7 @@ class Perf(BaseModel):
             Optional[Event]: An Event object if the distance is found in the mapping,
                 otherwise None.
         """
-        mapping: dict[int, Event] = {
+        mapping: dict[float, Event] = {
             5: Event("5km"),
             10: Event("10km"),
             15: Event("15km"),
@@ -90,7 +90,8 @@ class PerfOfAllTime(BaseModel):
             dict[float, Perf]: A dictionary with the distance as key and the
                 personal best performance as value.
         """
-        return {
+        all_pb = {
             distance: self.get_personal_best(distance)
             for distance in set(perf.distance for perf in self.perfs)
         }
+        return {distance: perf for distance, perf in all_pb.items() if perf is not None}

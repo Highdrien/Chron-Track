@@ -34,21 +34,13 @@ class Time(BaseModel):
         """Greater than or equal comparison"""
         return self.get_seconds() >= other.get_seconds()
 
-    def __eq__(self, other: "Time") -> bool:
-        """Equality comparison"""
-        return self.get_seconds() == other.get_seconds()
-
-    def __ne__(self, other: "Time") -> bool:
-        """Not equal comparison"""
-        return self.get_seconds() != other.get_seconds()
-
 
 class Pace(BaseModel):
     minutes: int
     seconds: float
 
     @classmethod
-    def from_time_distance(cls, time: Time, distance: int) -> Self:
+    def from_time_distance(cls, time: Time, distance: float) -> Self:
         """
         Initialize a Pace object from a Time object and a distance.
 

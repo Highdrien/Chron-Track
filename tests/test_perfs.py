@@ -2,8 +2,9 @@ from datetime import datetime
 
 from src.perfs_tracker import Perf, PerfOfAllTime
 from src.time_an_pace import Pace, Time
+from src.iaaf import Event
 
-perfs: dict[int, Time] = {
+perfs: dict[float, Time] = {
     6: Time(hours=0, minutes=47, seconds=28),
     10: Time(hours=1, minutes=45, seconds=0),
     21.1: Time(hours=0, minutes=25, seconds=0),
@@ -11,7 +12,7 @@ perfs: dict[int, Time] = {
 
 
 class TestPerf:
-    def test_10km(self):
+    def test_10km(self) -> None:
         distance = 10
         time = perfs[distance]
         perf = Perf(
@@ -23,7 +24,7 @@ class TestPerf:
         )
         expected_pace = Pace.from_time_distance(time, 10)
         assert perf.pace == expected_pace
-        assert perf.get_event().name == "e10km"
+        assert perf.get_event() == Event("10km")
 
     def test_half_marathon(self):
         distance = 21.1
@@ -31,7 +32,7 @@ class TestPerf:
         perf = Perf(time=time, distance=distance, name="HM in NY", date="2023-01-28")
         expected_pace = Pace.from_time_distance(time, distance)
         assert perf.pace == expected_pace
-        assert perf.get_event().name == "eHM"
+        assert perf.get_event() == Event("HM")
 
     def test_6km(self):
         distance = 6
@@ -83,10 +84,12 @@ class TestPerfOfAllTime:
 
     def test_find_pb_only_one_race(self):
         best_perf_on_21_1 = self.perfs_of_all_time.get_personal_best(21.1)
+        assert best_perf_on_21_1 is not None
         assert best_perf_on_21_1.time == perfs[21.1]
 
     def test_find_pb_multiple_races(self):
         best_perf_on_10 = self.perfs_of_all_time.get_personal_best(10)
+        assert best_perf_on_10 is not None
         assert best_perf_on_10 == self.test_perfs[-1]
 
     def test_find_pb_on_inexistent_distance(self):
@@ -95,7 +98,7 @@ class TestPerfOfAllTime:
 
     def test_get_all_pb(self):
         all_pb = self.perfs_of_all_time.get_all_personal_best()
-        expected_perfs: dict[str, Time] = {
+        expected_perfs: dict[float, Time] = {
             6: perfs[6],
             10: self.test_perfs[-1].time,
             21.1: perfs[21.1],
