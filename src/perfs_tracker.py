@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import Optional
 
@@ -22,7 +23,7 @@ class Perf(BaseModel):
         return Pace.from_time_distance(self.time, self.distance)
 
     def __str__(self) -> str:
-        return f"{self.time} for {self.distance}km on {self.date}"
+        return f"{self.time} for {self.distance}km on {self.date.date()}"
 
     def get_event(self) -> Optional[Event]:
         """
@@ -50,8 +51,47 @@ class Perf(BaseModel):
         return mapping[self.distance]
 
 
+class MainPerf(Perf):
+    sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
+
+    def add_sub_perf(self, list_sub_time: list[Time], sub_distance: float) -> None:
+        if self.sub_perfs is None:
+            self.sub_perfs = {}
+
+        sum_time = sum(sub_time.get_seconds() for sub_time in list_sub_time)
+        if sum_time > self.time.get_seconds():
+            raise ValueError(
+                "Sum of sub times cannot be greater than total"
+                + f" time (sum sub time{sum_time} > time:{self.time})"
+            )
+
+        for i, sub_time in enumerate(list_sub_time):
+            sub_data = deepcopy(self.__dict__)
+            sub_data["time"] = sub_time
+            sub_data["distance"] = sub_distance
+            sub_data["parent_perf"] = self
+            sub_data["begin_distance"] = i * sub_distance
+            sub_data["end_distance"] = (i + 1) * sub_distance
+            sub_perf = SubPerf(**sub_data)
+            self.sub_perfs[(sub_data["begin_distance"], sub_data["end_distance"])] = (
+                sub_perf
+            )
+
+
+class SubPerf(Perf):
+    parent_perf: MainPerf
+    begin_distance: float
+    end_distance: float
+
+    def __str__(self):
+        return (
+            f"SubPerf of {self.time} between {self.begin_distance} and "
+            + f"{self.end_distance}km during {self.distance}km on {self.date.date()}"
+        )
+
+
 class PerfOfAllTime(BaseModel):
-    perfs: list[Perf]
+    perfs: list[Perf] = []
     gender: Optional[Gender] = None
 
     @property
@@ -64,7 +104,20 @@ class PerfOfAllTime(BaseModel):
         return len(self.perfs)
 
     def add_perf(self, perf: Perf) -> None:
+        """
+        Adds a performance record to the tracker.
+
+        If the performance record is an instance of MainPerf, its sub-performances
+        are also added to the tracker.
+
+        Args:
+            perf (Perf): The performance record to be added.
+        """
         self.perfs.append(perf)
+
+        if isinstance(perf, MainPerf):
+            for sub_perf in perf.sub_perfs.values():
+                self.perfs.append(sub_perf)
 
     def get_personal_best(self, distance: float) -> Optional[Perf]:
         """
@@ -101,8 +154,8 @@ class PerfOfAllTime(BaseModel):
         """
         Computes the IAAF scores for each performance in the `perfs` list.
 
-        This method requires that the `iaaf` and `gender` attributes are set. If either
-        is not set, a message is printed and the method returns without computing any scores.
+        This method requires that the `iaaf` and `gender` attributes are set.
+        If either is not set, the method returns without computing any scores.
 
         Returns:
             None

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from src.iaaf import Event, Gender
-from src.perfs_tracker import Perf, PerfOfAllTime
+from src.perfs_tracker import MainPerf, PerfOfAllTime, SubPerf
 from src.time_an_pace import Pace, Time
 
 perfs: dict[float, Time] = {
@@ -10,12 +10,23 @@ perfs: dict[float, Time] = {
     21.1: Time(hours=1, minutes=25, seconds=0),
 }
 
+sub_perfs_10k: list[Time] = [
+    Time(hours=0, minutes=21, seconds=0),
+    Time(hours=0, minutes=19, seconds=0),
+]
+sub_perfs_21k: list[Time] = [
+    Time(hours=0, minutes=22, seconds=0),
+    Time(hours=0, minutes=20, seconds=30),
+    Time(hours=0, minutes=19, seconds=30),
+    Time(hours=0, minutes=18, seconds=0),
+]
+
 
 class TestPerf:
     def test_10km(self) -> None:
         distance = 10
         time = perfs[distance]
-        perf = Perf(
+        perf = MainPerf(
             time=time,
             distance=distance,
             name="10km in Paris",
@@ -29,7 +40,9 @@ class TestPerf:
     def test_half_marathon(self):
         distance = 21.1
         time = perfs[distance]
-        perf = Perf(time=time, distance=distance, name="HM in NY", date="2023-01-28")
+        perf = MainPerf(
+            time=time, distance=distance, name="HM in NY", date="2023-01-28"
+        )
         expected_pace = Pace.from_time_distance(time, distance)
         assert perf.pace == expected_pace
         assert perf.get_event() == Event("HM")
@@ -37,19 +50,45 @@ class TestPerf:
     def test_6km(self):
         distance = 6
         time = perfs[distance]
-        perf = Perf(
+        perf = MainPerf(
             time=time, distance=distance, name="one lap at backyard", date="2024-12-25"
         )
         expected_pace = Pace.from_time_distance(time, 6)
         assert perf.pace == expected_pace
         assert perf.get_event() is None
 
+    def test_sub_perfs_10(self):
+        distance = 10
+        time = perfs[distance]
+        perf = MainPerf(
+            time=time,
+            distance=distance,
+            date="2021-10-10",
+        )
+        perf.add_sub_perf(sub_perfs_10k, 5)
+        assert len(perf.sub_perfs) == len(sub_perfs_10k)
+        for sub_perf in perf.sub_perfs.values():
+            assert sub_perf.time in sub_perfs_10k
+
+    def test_sub_perfs_21(self):
+        distance = 21.1
+        time = perfs[distance]
+        perf = MainPerf(
+            time=time,
+            distance=distance,
+            date="2021-10-10",
+        )
+        perf.add_sub_perf(sub_perfs_21k, 5)
+        assert len(perf.sub_perfs) == len(sub_perfs_21k)
+        for sub_perf in perf.sub_perfs.values():
+            assert sub_perf.time in sub_perfs_21k
+
 
 class TestPerfOfAllTime:
     def setup_method(self):
-        self.test_perfs: list[Perf] = []
+        self.test_perfs: list[MainPerf] = []
         for distance, time in perfs.items():
-            perf = Perf(
+            perf = MainPerf(
                 time=time,
                 distance=distance,
                 date=datetime.now(),
@@ -59,7 +98,7 @@ class TestPerfOfAllTime:
 
         # Add also a 10km perf
         self.test_perfs.append(
-            Perf(
+            MainPerf(
                 time=Time(hours=0, minutes=40, seconds=0),
                 distance=10,
                 date=datetime.now(),
@@ -72,7 +111,7 @@ class TestPerfOfAllTime:
         assert len(self.perfs_of_all_time) == len(self.test_perfs)
 
     def test_add_perf(self):
-        new_perf = Perf(
+        new_perf = MainPerf(
             time=Time(hours=0, minutes=30, seconds=0),
             distance=5,
             date=datetime.now(),
@@ -119,3 +158,24 @@ class TestPerfOfAllTime:
         pb_6k = self.perfs_of_all_time.get_personal_best(6)
         assert pb_6k is not None
         assert pb_6k.iaaf_score is None
+
+    def test_find_pb_on_sub_split(self):
+        # Add a 10km perf with sub splits
+        perf10k = MainPerf(time=perfs[10], distance=10, date=datetime.now())
+        perf10k.add_sub_perf(sub_perfs_10k, 5)
+        self.perfs_of_all_time.add_perf(perf10k)
+
+        # Add a HM perf with sub splits of 5km
+        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k.add_sub_perf(sub_perfs_21k, 5)
+        self.perfs_of_all_time.add_perf(perf21k)
+
+        best_perf_on_5 = self.perfs_of_all_time.get_personal_best(5)
+        print(best_perf_on_5)
+        assert best_perf_on_5 is not None
+        # best perf on 5km must be the last 5k of the HM
+        assert issubclass(best_perf_on_5.__class__, SubPerf)
+        assert isinstance(best_perf_on_5, SubPerf)
+        assert best_perf_on_5.parent_perf == perf21k
+        assert best_perf_on_5.begin_distance == 15
+        assert best_perf_on_5.end_distance == 20
