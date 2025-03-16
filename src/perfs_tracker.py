@@ -98,6 +98,15 @@ class PerfOfAllTime(BaseModel):
         return {distance: perf for distance, perf in all_pb.items() if perf is not None}
 
     def compute_iaaf_scores(self) -> None:
+        """
+        Computes the IAAF scores for each performance in the `perfs` list.
+
+        This method requires that the `iaaf` and `gender` attributes are set. If either
+        is not set, a message is printed and the method returns without computing any scores.
+
+        Returns:
+            None
+        """
         if self.iaaf is None or self.gender is None:
             print("IAAF scores cannot be computed without gender information")
             return None
