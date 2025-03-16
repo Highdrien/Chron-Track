@@ -267,9 +267,9 @@ class PerfOfAllTime(BaseModel):
             dict[float, Perf]: A dictionary with the distance as key and the
                 personal best performance as value.
         """
+        runned_distances = sorted(list(set(perf.distance for perf in self.perfs)))
         all_pb = {
-            distance: self.get_personal_best(distance)
-            for distance in set(perf.distance for perf in self.perfs)
+            distance: self.get_personal_best(distance) for distance in runned_distances
         }
         return {distance: perf for distance, perf in all_pb.items() if perf is not None}
 
