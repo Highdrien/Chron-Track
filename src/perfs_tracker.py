@@ -15,6 +15,7 @@ class Perf(BaseModel):
     location: Optional[str] = None
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
+    iaaf_score: Optional[int] = None
 
     @property
     def pace(self) -> Pace:
@@ -95,3 +96,18 @@ class PerfOfAllTime(BaseModel):
             for distance in set(perf.distance for perf in self.perfs)
         }
         return {distance: perf for distance, perf in all_pb.items() if perf is not None}
+
+    def compute_iaaf_scores(self) -> None:
+        if self.iaaf is None or self.gender is None:
+            print("IAAF scores cannot be computed without gender information")
+            return None
+        for perf in self.perfs:
+            event = perf.get_event()
+            if event is None:
+                print(f"Event not found for distance {perf.distance}")
+                continue
+            iaaf_score = self.iaaf.get_iaaf_score(
+                gender=self.gender, event=event, time=perf.time
+            )
+            perf.iaaf_score = iaaf_score
+            print(f"IAAF score for {perf} is {iaaf_score}")

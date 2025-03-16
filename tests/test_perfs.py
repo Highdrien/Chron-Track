@@ -1,13 +1,13 @@
 from datetime import datetime
 
-from src.iaaf import Event
+from src.iaaf import Event, Gender
 from src.perfs_tracker import Perf, PerfOfAllTime
 from src.time_an_pace import Pace, Time
 
 perfs: dict[float, Time] = {
     6: Time(hours=0, minutes=47, seconds=28),
     10: Time(hours=1, minutes=45, seconds=0),
-    21.1: Time(hours=0, minutes=25, seconds=0),
+    21.1: Time(hours=1, minutes=25, seconds=0),
 }
 
 
@@ -106,3 +106,16 @@ class TestPerfOfAllTime:
         assert len(all_pb) == len(expected_perfs)
         for distance, perf in all_pb.items():
             assert perf.time == expected_perfs[distance]
+
+    def test_get_iaaf(self):
+        self.perfs_of_all_time.gender = Gender("female")
+        self.perfs_of_all_time.compute_iaaf_scores()
+        pb_10k = self.perfs_of_all_time.get_personal_best(10)
+        assert pb_10k is not None
+        assert pb_10k.iaaf_score == 755
+        pb_hm = self.perfs_of_all_time.get_personal_best(21.1)
+        assert pb_hm is not None
+        assert pb_hm.iaaf_score == 843
+        pb_6k = self.perfs_of_all_time.get_personal_best(6)
+        assert pb_6k is not None
+        assert pb_6k.iaaf_score is None
