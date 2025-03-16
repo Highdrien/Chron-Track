@@ -66,16 +66,44 @@ class MainPerf(Perf):
             )
 
         for i, sub_time in enumerate(list_sub_time):
-            sub_data = deepcopy(self.__dict__)
-            sub_data["time"] = sub_time
-            sub_data["distance"] = sub_distance
-            sub_data["parent_perf"] = self
-            sub_data["begin_distance"] = i * sub_distance
-            sub_data["end_distance"] = (i + 1) * sub_distance
-            sub_perf = SubPerf(**sub_data)
-            self.sub_perfs[(sub_data["begin_distance"], sub_data["end_distance"])] = (
-                sub_perf
+            begin_distance = i * sub_distance
+            end_distance = (i + 1) * sub_distance
+            sub_pref = self._create_sub_perf(sub_time, begin_distance, end_distance)
+            self.sub_perfs[(begin_distance, end_distance)] = sub_pref
+
+    def _create_sub_perf(
+        self, sub_time: Time, begin_distance: float, end_distance: float
+    ) -> "SubPerf":
+        """
+        Creates a sub-performance (SubPerf) instance based on the given sub_time,
+        begin_distance, and end_distance.
+
+        Args:
+            sub_time (Time): The time duration for the sub-performance.
+            begin_distance (float): The starting distance for the sub-performance.
+            end_distance (float): The ending distance for the sub-performance.
+
+        Returns:
+            SubPerf: A new SubPerf instance representing the sub-performance.
+        """
+        if begin_distance < 0:
+            raise ValueError("Begin distance cannot be negative")
+        if end_distance > self.distance:
+            raise ValueError("End distance cannot be greater than total distance")
+        if begin_distance > end_distance:
+            raise ValueError("End distance must be greater than begin distance")
+        if sub_time.get_seconds() > self.time.get_seconds():
+            raise ValueError(
+                "Sub time cannot be greater than total time"
+                + f" (sub time:{sub_time} > time:{self.time})"
             )
+        sub_data = deepcopy(self.__dict__)
+        sub_data["time"] = sub_time
+        sub_data["distance"] = end_distance - begin_distance
+        sub_data["parent_perf"] = self
+        sub_data["begin_distance"] = begin_distance
+        sub_data["end_distance"] = end_distance
+        return SubPerf(**sub_data)
 
 
 class SubPerf(Perf):
