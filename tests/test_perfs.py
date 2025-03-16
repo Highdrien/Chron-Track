@@ -1,8 +1,7 @@
-from src.perfs_tracker import Perf, PerfOfAllTime
-from src.time_an_pace import Time, Pace
-
 from datetime import datetime
 
+from src.perfs_tracker import Perf, PerfOfAllTime
+from src.time_an_pace import Pace, Time
 
 perfs: dict[int, Time] = {
     6: Time(hours=0, minutes=47, seconds=28),
@@ -42,7 +41,7 @@ class TestPerf:
         )
         expected_pace = Pace.from_time_distance(time, 6)
         assert perf.pace == expected_pace
-        assert perf.get_event() == None
+        assert perf.get_event() is None
 
 
 class TestPerfOfAllTime:
@@ -92,7 +91,7 @@ class TestPerfOfAllTime:
 
     def test_find_pb_on_inexistent_distance(self):
         best_perf_on_5 = self.perfs_of_all_time.get_personal_best(5)
-        assert best_perf_on_5 == None
+        assert best_perf_on_5 is None
 
     def test_get_all_pb(self):
         all_pb = self.perfs_of_all_time.get_all_personal_best()

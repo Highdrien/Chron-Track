@@ -87,12 +87,10 @@ class PerfOfAllTime(BaseModel):
         Retrieves the personal best performance for each distance.
 
         Returns:
-            dict[float, Perf]: A dictionary with the distance as key and the personal best
-                performance as value.
+            dict[float, Perf]: A dictionary with the distance as key and the
+                personal best performance as value.
         """
-        all_distances = set(perf.distance for perf in self.perfs)
-        output = {
+        return {
             distance: self.get_personal_best(distance)
             for distance in set(perf.distance for perf in self.perfs)
         }
-        return output
