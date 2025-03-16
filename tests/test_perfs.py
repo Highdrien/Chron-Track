@@ -1,8 +1,8 @@
 from datetime import datetime
 
+from src.iaaf import Event
 from src.perfs_tracker import Perf, PerfOfAllTime
 from src.time_an_pace import Pace, Time
-from src.iaaf import Event
 
 perfs: dict[float, Time] = {
     6: Time(hours=0, minutes=47, seconds=28),
