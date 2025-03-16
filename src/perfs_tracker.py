@@ -55,9 +55,19 @@ class MainPerf(Perf):
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
 
     def add_sub_perf(self, list_sub_time: list[Time], sub_distance: float) -> None:
-        if self.sub_perfs is None:
-            self.sub_perfs = {}
+        """
+        Adds sub-performance metrics to the performance tracker.
 
+        This method takes a list of sub-times and a sub-distance, and calculates
+        the sub-performance metrics for each segment. It ensures that the sum of
+        the sub-times does not exceed the total time of the performance.
+
+        Args:
+            list_sub_time (list[Time]): A list of Time objects representing the
+                sub-times for each segment of sub_distance.
+            sub_distance (float): The distance for each sub-performance segment.
+
+        """
         sum_time = sum(sub_time.get_seconds() for sub_time in list_sub_time)
         if sum_time > self.time.get_seconds():
             raise ValueError(
@@ -65,11 +75,29 @@ class MainPerf(Perf):
                 + f" time (sum sub time{sum_time} > time:{self.time})"
             )
 
-        for i, sub_time in enumerate(list_sub_time):
-            begin_distance = i * sub_distance
-            end_distance = (i + 1) * sub_distance
-            sub_pref = self._create_sub_perf(sub_time, begin_distance, end_distance)
-            self.sub_perfs[(begin_distance, end_distance)] = sub_pref
+        if sub_distance > self.distance:
+            raise ValueError(
+                "Sub distance cannot be greater than total distance"
+                + f" (sub distance:{sub_distance} > distance:{self.distance})"
+            )
+
+        sub_section_length = self._create_each_sub_section_length(
+            list_sub_time, sub_distance
+        )
+
+        for distance, list_sub_time in sub_section_length.items():
+            print(f"{distance=}, {list_sub_time=}")
+
+            for i, sub_time in enumerate(list_sub_time):
+                begin_distance = i * sub_distance
+                end_distance = begin_distance + distance
+                sub_pref = self._create_sub_perf(sub_time, begin_distance, end_distance)
+                if (begin_distance, end_distance) in self.sub_perfs:
+                    raise ValueError(
+                        f"SubPerf for {begin_distance}-{end_distance} already exists"
+                    )
+                self.sub_perfs[(begin_distance, end_distance)] = sub_pref
+                print(f"Added sub_perf: {sub_pref}")
 
     def _create_sub_perf(
         self, sub_time: Time, begin_distance: float, end_distance: float
@@ -104,6 +132,29 @@ class MainPerf(Perf):
         sub_data["begin_distance"] = begin_distance
         sub_data["end_distance"] = end_distance
         return SubPerf(**sub_data)
+
+    def _create_each_sub_section_length(
+        self, list_sub_time: list[Time], sub_distance: float
+    ) -> dict[float, list[Time]]:
+        each_sub_section_length: dict[float, list[Time]] = {}
+        step: int = 0
+        step_distance: float = sub_distance
+        while step_distance < self.distance:
+            # print(f"{step=}, {step_distance=}")
+            each_sub_section_length[step_distance] = []
+            for i in range(len(list_sub_time) - step):
+                # print(f"{i=}, {i + 1 + step=}")
+                slice_time = list_sub_time[i : i + 1 + step]
+                # print(f"{i=}, {slice_time=}")
+                sum_time_seconds = sum(
+                    sub_time.get_seconds() for sub_time in slice_time
+                )
+                each_sub_section_length[step_distance].append(
+                    Time.from_total_seconds(sum_time_seconds)
+                )
+            step_distance += sub_distance
+            step += 1
+        return each_sub_section_length
 
 
 class SubPerf(Perf):

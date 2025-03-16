@@ -79,9 +79,27 @@ class TestPerf:
             date="2021-10-10",
         )
         perf.add_sub_perf(sub_perfs_21k, 5)
-        assert len(perf.sub_perfs) == len(sub_perfs_21k)
-        for sub_perf in perf.sub_perfs.values():
-            assert sub_perf.time in sub_perfs_21k
+        assert len(perf.sub_perfs) == 4 + 3 + 2 + 1
+        # check that all 5k splits are in the sub_perfs
+        for i in range(4):
+            begin = 5 * i
+            end = begin + 5
+            assert (begin, end) in perf.sub_perfs
+
+        # check that all 10k splits are in the sub_perfs
+        for i in range(3):
+            begin = 5 * i
+            end = begin + 10
+            assert (begin, end) in perf.sub_perfs
+
+        # check that all 15k splits are in the sub_perfs
+        for i in range(2):
+            begin = 5 * i
+            end = begin + 15
+            assert (begin, end) in perf.sub_perfs
+
+        # check that all 20k splits are in the sub_perfs
+        assert (0, 20) in perf.sub_perfs
 
 
 class TestPerfOfAllTime:
@@ -170,12 +188,34 @@ class TestPerfOfAllTime:
         perf21k.add_sub_perf(sub_perfs_21k, 5)
         self.perfs_of_all_time.add_perf(perf21k)
 
+        # Test the best perf on 5km
+        # best perf on 5km must be the last 5k of the HM
         best_perf_on_5 = self.perfs_of_all_time.get_personal_best(5)
         print(best_perf_on_5)
         assert best_perf_on_5 is not None
-        # best perf on 5km must be the last 5k of the HM
-        assert issubclass(best_perf_on_5.__class__, SubPerf)
         assert isinstance(best_perf_on_5, SubPerf)
         assert best_perf_on_5.parent_perf == perf21k
         assert best_perf_on_5.begin_distance == 15
         assert best_perf_on_5.end_distance == 20
+
+        # Test the best perf on 10km
+        # best perf on 10km must be the last 10k of the HM
+        best_perf_on_10 = self.perfs_of_all_time.get_personal_best(10)
+        assert best_perf_on_10 is not None
+        assert isinstance(best_perf_on_10, SubPerf)
+        assert best_perf_on_10.parent_perf == perf21k
+        assert best_perf_on_10.begin_distance == 10
+        assert best_perf_on_10.end_distance == 20
+
+    def test_get_iaaf_on_splited_race(self):
+        # Add a HM perf with sub splits of 5km
+        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k.add_sub_perf(sub_perfs_21k, 5)
+        self.perfs_of_all_time.add_perf(perf21k)
+
+        self.perfs_of_all_time.gender = Gender("male")
+        self.perfs_of_all_time.compute_iaaf_scores()
+        pb_10k = self.perfs_of_all_time.get_personal_best(10)
+        assert pb_10k is not None
+        assert pb_10k.iaaf_score is not None
+        assert pb_10k.iaaf_score == 424
