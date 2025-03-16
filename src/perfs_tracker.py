@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from .iaaf import Event
+from .iaaf import Event, Gender, IAAFCalculator
 from .time_an_pace import Pace, Time
 
 
@@ -51,6 +51,13 @@ class Perf(BaseModel):
 
 class PerfOfAllTime(BaseModel):
     perfs: list[Perf]
+    gender: Optional[Gender] = None
+
+    @property
+    def iaaf(self) -> Optional[IAAFCalculator]:
+        if self.gender is None:
+            return None
+        return IAAFCalculator()
 
     def __len__(self) -> int:
         return len(self.perfs)
@@ -74,3 +81,18 @@ class PerfOfAllTime(BaseModel):
         if len(filtered_perfs) == 0:
             return None
         return min(filtered_perfs, key=lambda perf: perf.time)
+
+    def get_all_personal_best(self) -> dict[float, Perf]:
+        """
+        Retrieves the personal best performance for each distance.
+
+        Returns:
+            dict[float, Perf]: A dictionary with the distance as key and the personal best
+                performance as value.
+        """
+        all_distances = set(perf.distance for perf in self.perfs)
+        output = {
+            distance: self.get_personal_best(distance)
+            for distance in set(perf.distance for perf in self.perfs)
+        }
+        return output
