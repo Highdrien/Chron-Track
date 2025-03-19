@@ -2,9 +2,10 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel
+from typing_extensions import Self
 
 from .iaaf import Event, Gender, IAAFCalculator
 from .time_an_pace import Pace, Time
@@ -19,6 +20,10 @@ class Perf(BaseModel):
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, str]) -> Self:
+        return cls(**data)
 
     @property
     def pace(self) -> Pace:
@@ -57,6 +62,13 @@ class MainPerf(Perf):
     num_participants: Optional[int] = None
     rank: Optional[int] = None
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
+
+    @classmethod
+    def from_dict(cls, data: dict[str, str]) -> Self:
+        args: dict[str, Any] = data.copy()
+        time = Time.from_str(time_str=data["time"])
+        args["time"] = time
+        return cls(**args)
 
     @property
     def ratio(self) -> Optional[float]:
@@ -295,8 +307,33 @@ class PerfOfAllTime(BaseModel):
             print(f"IAAF score for {perf} is {iaaf_score}")
 
     def save_to_json(self, filepath: Path) -> None:
+        """
+        Save the performance data to a JSON file.
+
+        This method filters the performance data to include only instances of MainPerf,
+        converts them to dictionaries, and writes them to a JSON file at the filepath.
+
+        Args:
+            filepath (Path): The path to the file where the JSON data will be saved.
+        """
         main_perfs: list[MainPerf] = list(
             filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
         )
         data = [perf.to_dict() for perf in main_perfs]
         json.dump(data, open(filepath, "w"), indent=4)
+
+    def load_from_json(self, filepath: Path) -> None:
+        """
+        Load performance data from a JSON file and add it to the tracker.
+
+        Args:
+            filepath (Path): The path to the JSON file containing the performance data.
+        """
+        if not filepath.exists():
+            raise FileNotFoundError(f"File {filepath} does not exist")
+
+        data: list[dict[str, str]] = json.load(open(filepath, "r"))
+        for perf_data in data:
+            perf = MainPerf.from_dict(perf_data)
+            print(f"Loaded perf: {perf}")
+            self.add_perf(perf)

@@ -23,6 +23,22 @@ class Time(BaseModel):
         seconds = total_seconds % 60
         return Time(hours=hours, minutes=minutes, seconds=seconds)
 
+    @classmethod
+    def from_str(cls, time_str: str) -> Self:
+        """
+        Initialize a Time object from a string.
+
+        Args:
+            time_str (str): The string representing the time in the format:
+                "<hour>h<min>min<sec>s".
+
+        Returns:
+            Time: The Time object calculated from the string.
+        """
+        time_str = time_str.replace("h", ":").replace("min", ":").replace("s", "")
+        hours, minutes, seconds = time_str.split(":")
+        return Time(hours=int(hours), minutes=int(minutes), seconds=float(seconds))
+
     def __str__(self) -> str:
         return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
 

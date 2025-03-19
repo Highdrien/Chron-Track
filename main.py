@@ -35,3 +35,6 @@ for distance, perf in perfs.get_all_personal_best().items():
 
 file_path = Path("data/perfs.json")
 perfs.save_to_json(file_path)
+
+perfs.load_from_json(file_path)
+print(perfs)
