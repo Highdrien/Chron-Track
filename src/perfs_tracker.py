@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Iterator, Optional
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -27,6 +27,9 @@ class Perf(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.time} for {self.distance}km on {self.date.date()}"
+
+    def to_dict(self) -> dict[str, Any]:
+        raise NotImplementedError
 
     def get_event(self) -> Optional[Event]:
         """
@@ -61,7 +64,7 @@ class MainPerf(Perf):
 
     @classmethod
     def from_dict(cls, data: dict[str, str | list[dict[str, str]]]) -> Self:
-        args: dict[str, str | Time] = data.copy()
+        args: dict[str, Any] = data.copy()
 
         # Convert time to Time object
         if "time" not in data:
@@ -221,7 +224,7 @@ class SubPerf(Perf):
     end_distance: float
 
     @classmethod
-    def from_dict(cls, data: dict[str, str], parent: MainPerf) -> Self:
+    def from_dict(cls, data: dict[str, Any], parent: MainPerf) -> Self:
         args: dict[str, str | Time] = data.copy()
         # convert time to Time object
         if "time" not in data:
@@ -258,6 +261,13 @@ class PerfOfAllTime(BaseModel):
 
     def __len__(self) -> int:
         return len(self.perfs)
+
+    def __iter__(self) -> Iterator[Perf]:
+        for perf in self.perfs:
+            yield perf
+
+    def __getitem__(self, i: int) -> Perf:
+        return self.perfs[i]
 
     def add_perf(self, perf: Perf) -> None:
         """

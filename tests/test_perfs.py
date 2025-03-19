@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 from src.iaaf import Event, Gender
 from src.perfs_tracker import MainPerf, PerfOfAllTime, SubPerf
@@ -219,3 +220,27 @@ class TestPerfOfAllTime:
         assert pb_10k is not None
         assert pb_10k.iaaf_score is not None
         assert pb_10k.iaaf_score == 424
+
+    def test_save_and_load(self):
+        # Add a 10km perf with sub splits
+        perf10k = MainPerf(time=perfs[10], distance=10, date=datetime.now())
+        perf10k.add_sub_perf(sub_perfs_10k, 5)
+        self.perfs_of_all_time.add_perf(perf10k)
+
+        # Add a HM perf with sub splits of 5km
+        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k.add_sub_perf(sub_perfs_21k, 5)
+        self.perfs_of_all_time.add_perf(perf21k)
+
+        # Save perfs on temp.json
+        filepath = Path("temp.json")
+        self.perfs_of_all_time.save_to_json(filepath)
+
+        new_perfs_of_all_time = PerfOfAllTime()
+        new_perfs_of_all_time.load_from_json(filepath)
+        assert len(self.perfs_of_all_time) == len(new_perfs_of_all_time)
+        for i, perf in enumerate(self.perfs_of_all_time):
+            assert perf.to_dict() == new_perfs_of_all_time[i].to_dict()
+
+        assert filepath.exists()
+        filepath.unlink()
