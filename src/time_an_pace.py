@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 
 class Time(BaseModel):
-    hours: int
-    minutes: int
-    seconds: float
+    hours: int = Field(..., ge=0)
+    minutes: int = Field(..., ge=0, lt=60)
+    seconds: float = Field(..., ge=0, lt=60)
 
     @classmethod
     def from_total_seconds(cls, total_seconds: float) -> Self:
@@ -22,6 +22,22 @@ class Time(BaseModel):
         minutes = int((total_seconds % 3600) // 60)
         seconds = total_seconds % 60
         return Time(hours=hours, minutes=minutes, seconds=seconds)
+
+    @classmethod
+    def from_str(cls, time_str: str) -> Self:
+        """
+        Initialize a Time object from a string.
+
+        Args:
+            time_str (str): The string representing the time in the format:
+                "<hour>h<min>min<sec>s".
+
+        Returns:
+            Time: The Time object calculated from the string.
+        """
+        time_str = time_str.replace("h", ":").replace("min", ":").replace("s", "")
+        hours, minutes, seconds = time_str.split(":")
+        return Time(hours=int(hours), minutes=int(minutes), seconds=float(seconds))
 
     def __str__(self) -> str:
         return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
@@ -64,8 +80,8 @@ class Time(BaseModel):
 
 
 class Pace(BaseModel):
-    minutes: int
-    seconds: float
+    minutes: int = Field(..., ge=0)
+    seconds: float = Field(..., ge=0, lt=60)
 
     @classmethod
     def from_time_distance(cls, time: Time, distance: float) -> Self:
