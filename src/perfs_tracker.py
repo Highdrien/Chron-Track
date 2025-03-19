@@ -111,10 +111,10 @@ class MainPerf(Perf):
 
     def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
         output: dict[str, str | list[dict[str, str]]] = {
-            "time": str(self.time),
-            "distance": str(self.distance),
-            "date": str(self.date),
             "name_event": str(self.name_event),
+            "date": str(self.date),
+            "distance": str(self.distance),
+            "time": str(self.time),
             "location": str(self.location),
             "url_results": str(self.url_results),
             "url_strava": str(self.url_strava),
@@ -174,12 +174,9 @@ class MainPerf(Perf):
         step: int = 0
         step_distance: float = sub_distance
         while step_distance < self.distance:
-            # print(f"{step=}, {step_distance=}")
             each_sub_section_length[step_distance] = []
             for i in range(len(list_sub_time) - step):
-                # print(f"{i=}, {i + 1 + step=}")
                 slice_time = list_sub_time[i : i + 1 + step]
-                # print(f"{i=}, {slice_time=}")
                 sum_time_seconds = sum(
                     sub_time.get_seconds() for sub_time in slice_time
                 )
