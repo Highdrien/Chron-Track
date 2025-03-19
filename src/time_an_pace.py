@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import Self
 
 
 class Time(BaseModel):
-    hours: int
-    minutes: int
-    seconds: float
+    hours: int = Field(..., ge=0)
+    minutes: int = Field(..., ge=0, lt=60)
+    seconds: float = Field(..., ge=0, lt=60)
 
     @classmethod
     def from_total_seconds(cls, total_seconds: float) -> Self:
@@ -80,8 +80,8 @@ class Time(BaseModel):
 
 
 class Pace(BaseModel):
-    minutes: int
-    seconds: float
+    minutes: int = Field(..., ge=0)
+    seconds: float = Field(..., ge=0, lt=60)
 
     @classmethod
     def from_time_distance(cls, time: Time, distance: float) -> Self:
