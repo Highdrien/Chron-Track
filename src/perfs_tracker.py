@@ -21,10 +21,6 @@ class Perf(BaseModel):
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
 
-    @classmethod
-    def from_dict(cls, data: dict[str, str]) -> Self:
-        return cls(**data)
-
     @property
     def pace(self) -> Pace:
         return Pace.from_time_distance(self.time, self.distance)
@@ -78,6 +74,8 @@ class MainPerf(Perf):
             del args["sub_perfs"]
             self = cls(**args)
             for sub_perf_data in data["sub_perfs"]:
+                if isinstance(sub_perf_data, str):
+                    raise ValueError
                 args_copy = args.copy()
                 args_copy.update(sub_perf_data)
                 sub_perf = SubPerf.from_dict(args_copy, parent=self)
@@ -361,7 +359,9 @@ class PerfOfAllTime(BaseModel):
         if not filepath.exists():
             raise FileNotFoundError(f"File {filepath} does not exist")
 
-        data: list[dict[str, str]] = json.load(open(filepath, "r"))
+        data: list[dict[str, str | list[dict[str, str]]]] = json.load(
+            open(filepath, "r")
+        )
         for perf_data in data:
             perf = MainPerf.from_dict(perf_data)
             self.add_perf(perf)
