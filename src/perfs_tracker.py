@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 from typing_extensions import Self
@@ -64,10 +64,27 @@ class MainPerf(Perf):
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
 
     @classmethod
-    def from_dict(cls, data: dict[str, str]) -> Self:
-        args: dict[str, Any] = data.copy()
-        time = Time.from_str(time_str=data["time"])
-        args["time"] = time
+    def from_dict(cls, data: dict[str, str | list[dict[str, str]]]) -> Self:
+        args: dict[str, str | Time] = data.copy()
+
+        # Convert time to Time object
+        if "time" not in data:
+            raise ValueError("Time is required")
+        args["time"] = Time.from_str(time_str=data["time"])
+
+        # Convert sub_perfs to SubPerf objects
+        if "sub_perfs" in data:
+            sub_perfs = {}
+            del args["sub_perfs"]
+            self = cls(**args)
+            for sub_perf_data in data["sub_perfs"]:
+                args_copy = args.copy()
+                args_copy.update(sub_perf_data)
+                sub_perf = SubPerf.from_dict(args_copy, parent=self)
+                sub_perfs[(sub_perf.begin_distance, sub_perf.end_distance)] = sub_perf
+                print(sub_perfs)
+            args["sub_perfs"] = sub_perfs
+
         return cls(**args)
 
     @property
@@ -205,6 +222,15 @@ class SubPerf(Perf):
     begin_distance: float
     end_distance: float
 
+    @classmethod
+    def from_dict(cls, data: dict[str, str], parent: MainPerf) -> Self:
+        args: dict[str, str | Time] = data.copy()
+        # convert time to Time object
+        if "time" not in data:
+            raise ValueError("Time is required")
+        args["time"] = Time.from_str(time_str=data["time"])
+        return cls(**args, parent_perf=parent)
+
     def __str__(self):
         return (
             f"SubPerf of {self.time} between {self.begin_distance} and "
@@ -329,11 +355,14 @@ class PerfOfAllTime(BaseModel):
         Args:
             filepath (Path): The path to the JSON file containing the performance data.
         """
+        if len(self):
+            raise ValueError(f"perf is not empty: it contains {len(self)} performances")
+
         if not filepath.exists():
             raise FileNotFoundError(f"File {filepath} does not exist")
 
         data: list[dict[str, str]] = json.load(open(filepath, "r"))
         for perf_data in data:
             perf = MainPerf.from_dict(perf_data)
-            print(f"Loaded perf: {perf}")
             self.add_perf(perf)
+        print(f"Load {filepath}")
