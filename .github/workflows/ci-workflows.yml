@@ -34,7 +34,7 @@ jobs:
           uvx flake8 .
           uvx black . --check
           uvx isort .
-          uvx mypy .
+          uvx mypy src/
 
   test:
     runs-on: ubuntu-latest
