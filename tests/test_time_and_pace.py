@@ -1,4 +1,5 @@
 from math import isclose
+
 import pytest
 from pydantic import ValidationError
 

@@ -2,9 +2,9 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import pandas as pd
 from typing import Any, Iterator, Optional
 
+import pandas as pd
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -157,7 +157,7 @@ class MainPerf(Perf):
             ),
         }
         # remove None value
-        return {k: v for k, v in output.items() if v != None}
+        return {k: v for k, v in output.items() if v is not None}
 
     def get_basic_info(self) -> dict[str, str | int | None]:
         return {
