@@ -165,6 +165,7 @@ class MainPerf(Perf):
             "Date": str(self.date.date()),
             "Distance (km)": self.distance,
             "Time": str(self.time),
+            "Pace": str(self.pace),
             "Location": self.location,
         }
 

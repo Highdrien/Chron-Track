@@ -1,26 +1,32 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 
 
 class Time(BaseModel):
-    hours: int = Field(..., ge=0)
-    minutes: int = Field(..., ge=0, lt=60)
-    seconds: float = Field(..., ge=0, lt=60)
+    hours: int = Field(default=0, ge=0)
+    minutes: int = Field(ge=0, lt=60)
+    seconds: int = Field(..., ge=0, lt=60)
+
+    @model_validator(mode="after")
+    def check_not_zero(self) -> Self:
+        if self.hours == 0 and self.minutes == 0 and self.seconds == 0:
+            raise ValueError("Time cannot be zero")
+        return self
 
     @classmethod
-    def from_total_seconds(cls, total_seconds: float) -> Self:
+    def from_total_seconds(cls, total_seconds: int) -> Self:
         """
         Initialize a Time object from a total amount of seconds.
 
         Args:
-            total_seconds (float): The total amount of seconds to convert.
+            total_seconds (int): The total amount of seconds to convert.
 
         Returns:
             Time: The Time object calculated from the total amount of seconds.
         """
         hours = int(total_seconds // 3600)
         minutes = int((total_seconds % 3600) // 60)
-        seconds = total_seconds % 60
+        seconds = int(total_seconds % 60)
         return Time(hours=hours, minutes=minutes, seconds=seconds)
 
     @classmethod
@@ -35,12 +41,24 @@ class Time(BaseModel):
         Returns:
             Time: The Time object calculated from the string.
         """
-        time_str = time_str.replace("h", ":").replace("min", ":").replace("s", "")
-        hours, minutes, seconds = time_str.split(":")
-        return Time(hours=int(hours), minutes=int(minutes), seconds=float(seconds))
+        hours, minutes, seconds = 0, 0, 0
+        if "h" in time_str:
+            hours, time_str = time_str.split("h")
+            hours = int(hours)
+        if "min" in time_str:
+            minutes, time_str = time_str.split("min")
+            minutes = int(minutes)
+        if "s" in time_str:
+            seconds, _ = time_str.split("s")
+            seconds = int(seconds)
+        return Time(hours=hours, minutes=minutes, seconds=seconds)
 
     def __str__(self) -> str:
-        return f"{self.hours}h{self.minutes}min{self.seconds:.2f}s"
+        if self.hours == 0:
+            if self.minutes == 0:
+                return f"{self.seconds}s"
+            return f"{self.minutes}min{self.seconds}s"
+        return f"{self.hours}h{self.minutes}min{self.seconds}s"
 
     def get_minutes(self) -> float:
         """Convert time to minutes"""
@@ -105,7 +123,10 @@ class Pace(BaseModel):
         """Calculate the speed in km/h"""
         return 60 / (self.minutes + self.seconds / 60)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         pace_str = f"{self.minutes:02d}'{self.seconds:02.0f}"
         speed_str = f"{self.kmh:.2f}"
         return f"Pace: {pace_str} min/km (={speed_str} km/h)"
+
+    def __str__(self) -> str:
+        return f"{self.minutes:02d}'{self.seconds:02.0f}"

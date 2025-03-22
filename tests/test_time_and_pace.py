@@ -1,4 +1,6 @@
 from math import isclose
+import pytest
+from pydantic import ValidationError
 
 from src.time_an_pace import Pace, Time
 
@@ -20,7 +22,7 @@ class TestTime:
         assert t2 > t1
         assert t2 >= t1
 
-    def from_total_seconds(self):
+    def test_from_total_seconds(self):
         num_seconds = 5120
         t = Time.from_total_seconds(num_seconds)
         assert t.hours == 1
@@ -29,9 +31,22 @@ class TestTime:
 
     def test_add(self):
         t1 = Time(hours=1, minutes=25, seconds=20)
-        t2 = Time(hours=0, minutes=35, seconds=40)
+        t2 = Time(minutes=35, seconds=40)
         t = t1 + t2
         assert t == Time(hours=2, minutes=1, seconds=0)
+
+    @pytest.mark.parametrize(
+        ("minutes", "seconds"),
+        [
+            (20, -30),
+            (0, -30),
+            (0, 0),
+            (-10, -30),
+        ],
+    )
+    def test_time_negative(self, minutes, seconds):
+        with pytest.raises(ValidationError):
+            Time(minutes=minutes, seconds=seconds)
 
 
 class TestPace:
