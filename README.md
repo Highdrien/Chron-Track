@@ -15,6 +15,8 @@ This **ChronTrack** application helps you **track your running performances** ov
 ## 🚀 Getting Started
 
 ### Installation with uv
+
+You can use [uv](https://docs.astral.sh/uv/) to install the dependencies and create a virtual environment.
 ```bash
 pip install uv
 uv venv --python 3.12
