@@ -70,7 +70,7 @@ class MainPerf(Perf):
         # Convert time to Time object
         if "time" not in data:
             raise ValueError("Time is required")
-        args["time"] = Time.from_str(time_str=data["time"])
+        args["time"] = Time.from_str(time_str=str(data["time"]))
 
         # Convert sub_perfs to SubPerf objects
         if "sub_perfs" in data:
@@ -138,8 +138,8 @@ class MainPerf(Perf):
                 self.sub_perfs[(begin_distance, end_distance)] = sub_pref
                 print(f"Added sub_perf: {sub_pref}")
 
-    def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
-        output: dict[str, str | list[dict[str, str]]] = {
+    def to_dict(self) -> dict[str, str | int | float | list[dict[str, str]]]:
+        output: dict[str, str | int | float | list[dict[str, str]] | None] = {
             "name_event": self.name_event,
             "date": str(self.date.date()),
             "distance": self.distance,
@@ -159,7 +159,7 @@ class MainPerf(Perf):
         # remove None value
         return {k: v for k, v in output.items() if v is not None}
 
-    def get_basic_info(self) -> dict[str, str | int | None]:
+    def get_basic_info(self) -> dict[str, str | float | None]:
         return {
             "Name": self.name_event,
             "Date": str(self.date.date()),
@@ -398,6 +398,6 @@ class PerfOfAllTime(BaseModel):
             filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
         )
         data = list(map(lambda x: x.get_basic_info(), mainperfs))
-        data.sort(key=lambda x: x.get("Date"))
+        data.sort(key=lambda x: str(x.get("Date")))
 
         return pd.DataFrame(data)

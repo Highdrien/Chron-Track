@@ -43,14 +43,14 @@ class Time(BaseModel):
         """
         hours, minutes, seconds = 0, 0, 0
         if "h" in time_str:
-            hours, time_str = time_str.split("h")
-            hours = int(hours)
+            hours_str, time_str = time_str.split("h")
+            hours = int(hours_str)
         if "min" in time_str:
-            minutes, time_str = time_str.split("min")
-            minutes = int(minutes)
+            minutes_str, time_str = time_str.split("min")
+            minutes = int(minutes_str)
         if "s" in time_str:
-            seconds, _ = time_str.split("s")
-            seconds = int(seconds)
+            seconds_str, _ = time_str.split("s")
+            seconds = int(seconds_str)
         return Time(hours=hours, minutes=minutes, seconds=seconds)
 
     def __str__(self) -> str:
@@ -64,7 +64,7 @@ class Time(BaseModel):
         """Convert time to minutes"""
         return self.hours * 60 + self.minutes + self.seconds / 60
 
-    def get_seconds(self) -> float:
+    def get_seconds(self) -> int:
         """Convert time to seconds"""
         return self.hours * 3600 + self.minutes * 60 + self.seconds
 
