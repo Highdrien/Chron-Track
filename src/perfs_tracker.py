@@ -84,7 +84,6 @@ class MainPerf(Perf):
                 args_copy.update(sub_perf_data)
                 sub_perf = SubPerf.from_dict(args_copy, parent=self)
                 sub_perfs[(sub_perf.begin_distance, sub_perf.end_distance)] = sub_perf
-                print(sub_perfs)
             args["sub_perfs"] = sub_perfs
 
         return cls(**args)
@@ -127,7 +126,6 @@ class MainPerf(Perf):
         )
 
         for distance, list_sub_time in sub_section_length.items():
-            print(f"{distance=}, {list_sub_time=}")
 
             for i, sub_time in enumerate(list_sub_time):
                 begin_distance = i * sub_distance
@@ -400,7 +398,5 @@ class PerfOfAllTime(BaseModel):
         )
         data = list(map(lambda x: x.get_basic_info(), mainperfs))
         data.sort(key=lambda x: x.get("Date"))
-
-        print(f"Data: {data}")
 
         return pd.DataFrame(data)

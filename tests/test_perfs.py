@@ -192,7 +192,6 @@ class TestPerfOfAllTime:
         # Test the best perf on 5km
         # best perf on 5km must be the last 5k of the HM
         best_perf_on_5 = self.perfs_of_all_time.get_personal_best(5)
-        print(best_perf_on_5)
         assert best_perf_on_5 is not None
         assert isinstance(best_perf_on_5, SubPerf)
         assert best_perf_on_5.parent_perf == perf21k
