@@ -1,11 +1,11 @@
-from pathlib import Path
 import datetime
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from src.perfs_tracker import PerfOfAllTime, MainPerf
-from src.time_an_pace import Time
+from .perfs_tracker import MainPerf, PerfOfAllTime
+from .time_an_pace import Time
 
 
 @st.cache_data

@@ -1,7 +1,6 @@
 import streamlit as st
-import pandas as pd
-from src import st_utils
 
+from src import st_utils
 
 if "perfs" not in st.session_state:
     perfs = st_utils.load_data()

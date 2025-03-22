@@ -30,7 +30,7 @@ class TestPerf:
         perf = MainPerf(
             time=time,
             distance=distance,
-            name="10km in Paris",
+            name_event="10km in Paris",
             date="2021-10-10",
             location="Paris",
         )
@@ -42,7 +42,11 @@ class TestPerf:
         distance = 21.1
         time = perfs[distance]
         perf = MainPerf(
-            time=time, distance=distance, name="HM in NY", date="2023-01-28"
+            time=time,
+            distance=distance,
+            name_event="HM in NY",
+            date="2023-01-28",
+            location="NY",
         )
         expected_pace = Pace.from_time_distance(time, distance)
         assert perf.pace == expected_pace
@@ -52,7 +56,11 @@ class TestPerf:
         distance = 6
         time = perfs[distance]
         perf = MainPerf(
-            time=time, distance=distance, name="one lap at backyard", date="2024-12-25"
+            time=time,
+            distance=distance,
+            name_event="one lap at backyard",
+            date="2024-12-25",
+            location="America",
         )
         expected_pace = Pace.from_time_distance(time, 6)
         assert perf.pace == expected_pace
@@ -65,6 +73,8 @@ class TestPerf:
             time=time,
             distance=distance,
             date="2021-10-10",
+            location="Paris",
+            name_event="10km in Paris",
         )
         perf.add_sub_perf(sub_perfs_10k, 5)
         assert len(perf.sub_perfs) == len(sub_perfs_10k)
@@ -78,6 +88,8 @@ class TestPerf:
             time=time,
             distance=distance,
             date="2021-10-10",
+            location="Paris",
+            name_event="HM in Paris",
         )
         perf.add_sub_perf(sub_perfs_21k, 5)
         assert len(perf.sub_perfs) == 4 + 3 + 2 + 1
@@ -112,6 +124,7 @@ class TestPerfOfAllTime:
                 distance=distance,
                 date=datetime.now(),
                 name_event=f"test {distance}km on {time}",
+                location="Paris",
             )
             self.test_perfs.append(perf)
 
@@ -122,6 +135,7 @@ class TestPerfOfAllTime:
                 distance=10,
                 date=datetime.now(),
                 name_event="10km pb",
+                location="Paris",
             )
         )
         self.perfs_of_all_time = PerfOfAllTime(perfs=self.test_perfs)
@@ -134,6 +148,7 @@ class TestPerfOfAllTime:
             time=Time(minutes=30, seconds=0),
             distance=5,
             date=datetime.now(),
+            location="Park",
             name_event="5km in the park",
         )
         self.perfs_of_all_time.add_perf(new_perf)
@@ -180,12 +195,24 @@ class TestPerfOfAllTime:
 
     def test_find_pb_on_sub_split(self):
         # Add a 10km perf with sub splits
-        perf10k = MainPerf(time=perfs[10], distance=10, date=datetime.now())
+        perf10k = MainPerf(
+            time=perfs[10],
+            distance=10,
+            date=datetime.now(),
+            location="Paris",
+            name_event="10km in Paris",
+        )
         perf10k.add_sub_perf(sub_perfs_10k, 5)
         self.perfs_of_all_time.add_perf(perf10k)
 
         # Add a HM perf with sub splits of 5km
-        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k = MainPerf(
+            time=perfs[21.1],
+            distance=21.1,
+            date=datetime.now(),
+            location="Paris",
+            name_event="HM in Paris",
+        )
         perf21k.add_sub_perf(sub_perfs_21k, 5)
         self.perfs_of_all_time.add_perf(perf21k)
 
@@ -209,7 +236,13 @@ class TestPerfOfAllTime:
 
     def test_get_iaaf_on_splited_race(self):
         # Add a HM perf with sub splits of 5km
-        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k = MainPerf(
+            time=perfs[21.1],
+            distance=21.1,
+            date=datetime.now(),
+            location="Paris",
+            name_event="HM in Paris",
+        )
         perf21k.add_sub_perf(sub_perfs_21k, 5)
         self.perfs_of_all_time.add_perf(perf21k)
 
@@ -222,12 +255,24 @@ class TestPerfOfAllTime:
 
     def test_save_and_load(self):
         # Add a 10km perf with sub splits
-        perf10k = MainPerf(time=perfs[10], distance=10, date=datetime.now())
+        perf10k = MainPerf(
+            time=perfs[10],
+            distance=10,
+            date=datetime.now(),
+            location="Paris",
+            name_event="10km in Paris",
+        )
         perf10k.add_sub_perf(sub_perfs_10k, 5)
         self.perfs_of_all_time.add_perf(perf10k)
 
         # Add a HM perf with sub splits of 5km
-        perf21k = MainPerf(time=perfs[21.1], distance=21.1, date=datetime.now())
+        perf21k = MainPerf(
+            time=perfs[21.1],
+            distance=21.1,
+            date=datetime.now(),
+            location="Paris",
+            name_event="HM in Paris",
+        )
         perf21k.add_sub_perf(sub_perfs_21k, 5)
         self.perfs_of_all_time.add_perf(perf21k)
 
