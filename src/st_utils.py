@@ -71,42 +71,54 @@ def add_new_race():
     and distance. On form submission, the new race is added to the session state
     DataFrame and saved to a JSON file.
     """
-    new_name = st.text_input("Nom de la course", placeholder="Ex: Marathon de Paris")
-    new_location = st.text_input("Ville", placeholder="Ex: Montpellier")
+    st.subheader("Enter the race detail:")
+    name = st.text_input("Race name", placeholder="Ex: Marathon de Paris")
+    location = st.text_input("City", placeholder="Ex: Montpellier")
+    date = st.date_input("Race date", datetime.date.today())
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        chrono_hours = st.number_input(
-            "Heures", min_value=0, max_value=23, value=0, step=1
-        )
+        hours = st.number_input("Hours", min_value=0, max_value=78, value=0, step=1)
     with col2:
-        chrono_minutes = st.number_input(
-            "Minutes", min_value=0, max_value=59, value=0, step=1
-        )
+        minutes = st.number_input("Minutes", min_value=0, max_value=59, value=0, step=1)
     with col3:
-        chrono_seconds = st.number_input(
+        seconds = st.number_input(
             "Secondes", min_value=0, max_value=59, value=0, step=1
         )
 
-    new_distance = st.number_input(
+    distance = st.number_input(
         "Distance (km)", min_value=0.1, max_value=500.0, value=10.0, step=0.1
     )
 
-    submit_button = st.form_submit_button(label="✅ Ajouter la course")
+    st.subheader("Additional information (optional):")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        rank = st.number_input("Rank (optional)", min_value=0, step=1)
+    with col2:
+        num_participants = st.number_input(
+            "Number of participants (optional)", min_value=0, step=1
+        )
+
+    url_results = st.text_input("URL results (optional)")
+    url_strava = st.text_input("URL Strava (optional)")
+
+    submit_button = st.form_submit_button(label="✅ Add the race to the database")
 
     if submit_button:
         # Ajouter la nouvelle course au DataFrame de session_state
-        new_time = Time(
-            hours=chrono_hours, minutes=chrono_minutes, seconds=chrono_seconds
-        )
+        new_time = Time(hours=hours, minutes=minutes, seconds=seconds)
         new_perf = MainPerf(
-            name_event=new_name,
-            date=datetime.datetime.now(),
-            distance=new_distance,
+            name_event=name,
+            date=date,
+            distance=distance,
             time=new_time,
-            location=new_location,
+            location=location,
+            rank=rank if rank != 0 else None,
+            num_participants=num_participants if num_participants != 0 else None,
+            url_results=url_results,
+            url_strava=url_strava,
         )
-        print(new_perf)
         perfs: PerfOfAllTime = st.session_state["perfs"]
         perfs.add_perf(new_perf)
         st.session_state["df"] = perfs.table()
@@ -114,8 +126,24 @@ def add_new_race():
         if perfs:
             perfs.save_to_json(Path("data/perfs.json"))
 
-        st.success("✅ Course ajoutée avec succès !")
+        st.success("✅ Race added successfully!")
 
         # Masquer le formulaire après ajout
         st.session_state["show_form"] = False
         st.rerun()
+
+
+def get_pbs_as_dataframe() -> pd.DataFrame:
+    """
+    Retrieve personal best performances from the session state and
+    return them as a pandas DataFrame.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing all personal best performances.
+    """
+    perfs: PerfOfAllTime = st.session_state["perfs"]
+    pb = perfs.get_all_personal_best()
+    pb_with_time: dict[float, str] = {
+        distance: str(perf.time) for distance, perf in pb.items()
+    }
+    return pd.DataFrame(list(pb_with_time.items()), columns=["Distance (km)", "Chrono"])

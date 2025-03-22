@@ -1,5 +1,5 @@
 import streamlit as st
-
+import pandas as pd
 from src import st_utils
 
 
@@ -21,6 +21,11 @@ if st.sidebar.button("Reset filters"):
 
 st.sidebar.subheader("Display performances")
 st.write("Here are your best performances:")
+
+if "perfs" in st.session_state:
+    st.sidebar.dataframe(
+        st_utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
+    )
 
 st.dataframe(df, hide_index=True, use_container_width=True)
 

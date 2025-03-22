@@ -16,8 +16,8 @@ class Perf(BaseModel):
     time: Time
     distance: float
     date: datetime
-    name_event: Optional[str] = None
-    location: Optional[str] = None
+    name_event: str
+    location: str
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
@@ -159,7 +159,19 @@ class MainPerf(Perf):
         # remove None value
         return {k: v for k, v in output.items() if v is not None}
 
-    def get_basic_info(self) -> dict[str, str | float | None]:
+    def get_basic_info(self) -> dict[str, str | float]:
+        """
+        Retrieve basic information about the event.
+
+        Returns:
+            (dict[str, str | float]): A dictionary containing the following keys:
+                - "Name" (str): The name of the event.
+                - "Date" (str): The date of the event in YYYY-MM-DD format.
+                - "Distance (km)" (float): The distance of the event in kilometers.
+                - "Time" (str): The time taken for the event.
+                - "Pace (min/km)" (str): The pace of the event in minutes per kilometer.
+                - "Location" (str): The location of the event.
+        """
         return {
             "Name": self.name_event,
             "Date": str(self.date.date()),
