@@ -143,7 +143,7 @@ class MainPerf(Perf):
     def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
         output: dict[str, str | list[dict[str, str]]] = {
             "name_event": self.name_event,
-            "date": str(self.date),
+            "date": str(self.date.date()),
             "distance": self.distance,
             "time": str(self.time),
             "location": self.location,
@@ -155,16 +155,16 @@ class MainPerf(Perf):
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs
-                else "None"
+                else None
             ),
         }
         # remove None value
-        return {k: v for k, v in output.items() if v != "None"}
+        return {k: v for k, v in output.items() if v != None}
 
     def get_basic_info(self) -> dict[str, str | int | None]:
         return {
             "name_event": self.name_event,
-            "date": str(self.date),
+            "date": str(self.date.date()),
             "distance": self.distance,
             "time": str(self.time),
             "location": self.location,
