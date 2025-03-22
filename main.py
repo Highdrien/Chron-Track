@@ -33,14 +33,14 @@ perf = MainPerf(
     name_event="10 km de Paris",
     date=datetime(2019, 10, 6),
     distance=10,
-    time=Time(hours=0, minutes=41, seconds=0),
+    time=Time(minutes=41, seconds=0),
     location="Paris",
     rank=1,
     num_participants=10000,
 )
 sub_perfs_10k: list[Time] = [
-    Time(hours=0, minutes=21, seconds=0),
-    Time(hours=0, minutes=19, seconds=0),
+    Time(minutes=21, seconds=0),
+    Time(minutes=19, seconds=0),
 ]
 perf.add_sub_perf(sub_perfs_10k, sub_distance=5)
 perfs.add_perf(perf)

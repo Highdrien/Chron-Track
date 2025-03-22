@@ -22,8 +22,8 @@ class TestIAAFCalculator:
     @pytest.mark.parametrize(
         "gender, event, time, expected",
         [
-            ("male", "100m", Time(hours=0, minutes=0, seconds=10.0), 1206),
-            ("female", "100m", Time(hours=0, minutes=0, seconds=10.0), 1400),
+            ("male", "100m", Time(minutes=0, seconds=10.0), 1206),
+            ("female", "100m", Time(minutes=0, seconds=10.0), 1400),
             ("male", "HM", Time(hours=1, minutes=0, seconds=0.0), 1186),
             ("female", "HM", Time(hours=1, minutes=0, seconds=0.0), 1345),
             ("male", "Marathon", Time(hours=2, minutes=30, seconds=0.0), 853),

@@ -63,7 +63,7 @@ class TestPace:
         assert p.kmh == 10
 
     def test_5k(self):
-        p = Pace.from_time_distance(Time(hours=0, minutes=17, seconds=30), 5)
+        p = Pace.from_time_distance(Time(minutes=17, seconds=30), 5)
         assert p.minutes == 3
         assert p.seconds == 30
         assert isclose(p.kmh, 17.14, rel_tol=1e-3)
