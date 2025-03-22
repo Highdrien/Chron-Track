@@ -163,11 +163,11 @@ class MainPerf(Perf):
 
     def get_basic_info(self) -> dict[str, str | int | None]:
         return {
-            "name_event": self.name_event,
-            "date": str(self.date.date()),
-            "distance": self.distance,
-            "time": str(self.time),
-            "location": self.location,
+            "Name": self.name_event,
+            "Date": str(self.date.date()),
+            "Distance (km)": self.distance,
+            "Time": str(self.time),
+            "Location": self.location,
         }
 
     def _create_sub_perf(
@@ -399,7 +399,7 @@ class PerfOfAllTime(BaseModel):
             filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
         )
         data = list(map(lambda x: x.get_basic_info(), mainperfs))
-        data.sort(key=lambda x: x.get("date"))
+        data.sort(key=lambda x: x.get("Date"))
 
         print(f"Data: {data}")
 
