@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
+import pandas as pd
 from typing import Any, Iterator, Optional
 
 from pydantic import BaseModel
@@ -376,3 +377,25 @@ class PerfOfAllTime(BaseModel):
             perf = MainPerf.from_dict(perf_data)
             self.add_perf(perf)
         print(f"Load {filepath}")
+
+    def table(self) -> pd.DataFrame:
+        """
+        Returns a pandas DataFrame with the performance data with
+        only the main performances.
+
+        Returns:
+            pd.DataFrame: A DataFrame with the performance data.
+        """
+        mainperfs: list[MainPerf] = list(
+            filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
+        )
+        data = []
+        for mainperf in mainperfs:
+            mainperf_data = mainperf.to_dict()
+            if "sub_perfs" in mainperf_data:
+                del mainperf_data["sub_perfs"]
+            data.append(mainperf_data)
+
+        print(f"Data: {data}")
+
+        return pd.DataFrame(data)
