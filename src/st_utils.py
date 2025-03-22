@@ -4,17 +4,17 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from .perfs_tracker import MainPerf, PerfOfAllTime
+from .perfs_tracker import MainPerf, PerfsRaces
 from .time_an_pace import Time
 
 
 @st.cache_data
-def load_data() -> PerfOfAllTime:
+def load_data() -> PerfsRaces:
     """
     Loads performance data from a JSON file.
     """
     filepath = Path("data/perfs.json")
-    perfs = PerfOfAllTime()
+    perfs = PerfsRaces()
     if filepath.exists():
         perfs.load_from_json(Path("data/perfs.json"))
 
@@ -119,7 +119,7 @@ def add_new_race():
             url_results=url_results,
             url_strava=url_strava,
         )
-        perfs: PerfOfAllTime = st.session_state["perfs"]
+        perfs: PerfsRaces = st.session_state["perfs"]
         perfs.add_perf(new_perf)
         st.session_state["df"] = perfs.table()
 
@@ -141,7 +141,7 @@ def get_pbs_as_dataframe() -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing all personal best performances.
     """
-    perfs: PerfOfAllTime = st.session_state["perfs"]
+    perfs: PerfsRaces = st.session_state["perfs"]
     pb = perfs.get_all_personal_best()
     pb_with_time: dict[float, str] = {
         distance: str(perf.time) for distance, perf in pb.items()

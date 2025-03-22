@@ -270,7 +270,7 @@ class SubPerf(Perf):
         return {k: v for k, v in output.items() if v != "None"}
 
 
-class PerfOfAllTime(BaseModel):
+class PerfsRaces(BaseModel):
     perfs: list[Perf] = []
     gender: Optional[Gender] = None
 

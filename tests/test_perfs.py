@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.iaaf import Event, Gender
-from src.perfs_tracker import MainPerf, PerfOfAllTime, SubPerf
+from src.perfs_tracker import MainPerf, PerfsRaces, SubPerf
 from src.time_an_pace import Pace, Time
 
 perfs: dict[float, Time] = {
@@ -138,7 +138,7 @@ class TestPerfOfAllTime:
                 location="Paris",
             )
         )
-        self.perfs_of_all_time = PerfOfAllTime(perfs=self.test_perfs)
+        self.perfs_of_all_time = PerfsRaces(perfs=self.test_perfs)
 
     def test_len(self):
         assert len(self.perfs_of_all_time) == len(self.test_perfs)
@@ -280,7 +280,7 @@ class TestPerfOfAllTime:
         filepath = Path("temp.json")
         self.perfs_of_all_time.save_to_json(filepath)
 
-        new_perfs_of_all_time = PerfOfAllTime()
+        new_perfs_of_all_time = PerfsRaces()
         new_perfs_of_all_time.load_from_json(filepath)
         assert len(self.perfs_of_all_time) == len(new_perfs_of_all_time)
         for i, perf in enumerate(self.perfs_of_all_time):
