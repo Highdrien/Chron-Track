@@ -142,16 +142,16 @@ class MainPerf(Perf):
 
     def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
         output: dict[str, str | list[dict[str, str]]] = {
-            "name_event": str(self.name_event),
+            "name_event": self.name_event,
             "date": str(self.date),
-            "distance": str(self.distance),
+            "distance": self.distance,
             "time": str(self.time),
-            "location": str(self.location),
-            "url_results": str(self.url_results),
-            "url_strava": str(self.url_strava),
-            "iaaf_score": str(self.iaaf_score),
-            "num_participants": str(self.num_participants),
-            "rank": str(self.rank),
+            "location": self.location,
+            "url_results": self.url_results,
+            "url_strava": self.url_strava,
+            "iaaf_score": self.iaaf_score,
+            "rank": self.rank,
+            "num_participants": self.num_participants,
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs
@@ -160,6 +160,15 @@ class MainPerf(Perf):
         }
         # remove None value
         return {k: v for k, v in output.items() if v != "None"}
+
+    def get_basic_info(self) -> dict[str, str | int | None]:
+        return {
+            "name_event": self.name_event,
+            "date": str(self.date),
+            "distance": self.distance,
+            "time": str(self.time),
+            "location": self.location,
+        }
 
     def _create_sub_perf(
         self, sub_time: Time, begin_distance: float, end_distance: float
@@ -389,12 +398,8 @@ class PerfOfAllTime(BaseModel):
         mainperfs: list[MainPerf] = list(
             filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
         )
-        data = []
-        for mainperf in mainperfs:
-            mainperf_data = mainperf.to_dict()
-            if "sub_perfs" in mainperf_data:
-                del mainperf_data["sub_perfs"]
-            data.append(mainperf_data)
+        data = list(map(lambda x: x.get_basic_info(), mainperfs))
+        data.sort(key=lambda x: x.get("date"))
 
         print(f"Data: {data}")
 
