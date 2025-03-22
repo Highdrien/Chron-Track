@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
+import pandas as pd
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -15,8 +16,8 @@ class Perf(BaseModel):
     time: Time
     distance: float
     date: datetime
-    name_event: Optional[str] = None
-    location: Optional[str] = None
+    name_event: str
+    location: str
     url_results: Optional[str] = None
     url_strava: Optional[str] = None
     iaaf_score: Optional[int] = None
@@ -69,7 +70,7 @@ class MainPerf(Perf):
         # Convert time to Time object
         if "time" not in data:
             raise ValueError("Time is required")
-        args["time"] = Time.from_str(time_str=data["time"])
+        args["time"] = Time.from_str(time_str=str(data["time"]))
 
         # Convert sub_perfs to SubPerf objects
         if "sub_perfs" in data:
@@ -83,7 +84,6 @@ class MainPerf(Perf):
                 args_copy.update(sub_perf_data)
                 sub_perf = SubPerf.from_dict(args_copy, parent=self)
                 sub_perfs[(sub_perf.begin_distance, sub_perf.end_distance)] = sub_perf
-                print(sub_perfs)
             args["sub_perfs"] = sub_perfs
 
         return cls(**args)
@@ -126,7 +126,6 @@ class MainPerf(Perf):
         )
 
         for distance, list_sub_time in sub_section_length.items():
-            print(f"{distance=}, {list_sub_time=}")
 
             for i, sub_time in enumerate(list_sub_time):
                 begin_distance = i * sub_distance
@@ -139,26 +138,48 @@ class MainPerf(Perf):
                 self.sub_perfs[(begin_distance, end_distance)] = sub_pref
                 print(f"Added sub_perf: {sub_pref}")
 
-    def to_dict(self) -> dict[str, str | list[dict[str, str]]]:
-        output: dict[str, str | list[dict[str, str]]] = {
-            "name_event": str(self.name_event),
-            "date": str(self.date),
-            "distance": str(self.distance),
+    def to_dict(self) -> dict[str, str | int | float | list[dict[str, str]]]:
+        output: dict[str, str | int | float | list[dict[str, str]] | None] = {
+            "name_event": self.name_event,
+            "date": str(self.date.date()),
+            "distance": self.distance,
             "time": str(self.time),
-            "location": str(self.location),
-            "url_results": str(self.url_results),
-            "url_strava": str(self.url_strava),
-            "iaaf_score": str(self.iaaf_score),
-            "num_participants": str(self.num_participants),
-            "rank": str(self.rank),
+            "location": self.location,
+            "url_results": self.url_results,
+            "url_strava": self.url_strava,
+            "iaaf_score": self.iaaf_score,
+            "rank": self.rank,
+            "num_participants": self.num_participants,
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs
-                else "None"
+                else None
             ),
         }
         # remove None value
-        return {k: v for k, v in output.items() if v != "None"}
+        return {k: v for k, v in output.items() if v is not None}
+
+    def get_basic_info(self) -> dict[str, str | float]:
+        """
+        Retrieve basic information about the event.
+
+        Returns:
+            (dict[str, str | float]): A dictionary containing the following keys:
+                - "Name" (str): The name of the event.
+                - "Date" (str): The date of the event in YYYY-MM-DD format.
+                - "Distance (km)" (float): The distance of the event in kilometers.
+                - "Time" (str): The time taken for the event.
+                - "Pace (min/km)" (str): The pace of the event in minutes per kilometer.
+                - "Location" (str): The location of the event.
+        """
+        return {
+            "Name": self.name_event,
+            "Date": str(self.date.date()),
+            "Distance (km)": self.distance,
+            "Time": str(self.time),
+            "Pace (min/km)": str(self.pace),
+            "Location": self.location,
+        }
 
     def _create_sub_perf(
         self, sub_time: Time, begin_distance: float, end_distance: float
@@ -249,7 +270,7 @@ class SubPerf(Perf):
         return {k: v for k, v in output.items() if v != "None"}
 
 
-class PerfOfAllTime(BaseModel):
+class PerfsRaces(BaseModel):
     perfs: list[Perf] = []
     gender: Optional[Gender] = None
 
@@ -376,3 +397,19 @@ class PerfOfAllTime(BaseModel):
             perf = MainPerf.from_dict(perf_data)
             self.add_perf(perf)
         print(f"Load {filepath}")
+
+    def table(self) -> pd.DataFrame:
+        """
+        Returns a pandas DataFrame with the performance data with
+        only the main performances.
+
+        Returns:
+            pd.DataFrame: A DataFrame with the performance data.
+        """
+        mainperfs: list[MainPerf] = list(
+            filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
+        )
+        data = list(map(lambda x: x.get_basic_info(), mainperfs))
+        data.sort(key=lambda x: str(x.get("Date")))
+
+        return pd.DataFrame(data)
