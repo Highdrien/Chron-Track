@@ -159,7 +159,7 @@ class MainPerf(Perf):
         # remove None value
         return {k: v for k, v in output.items() if v is not None}
 
-    def get_basic_info(self) -> dict[str, str | float]:
+    def get_basic_info(self) -> dict[str, str | float | list[float] | None]:
         """
         Retrieve basic information about the event.
 
@@ -171,6 +171,8 @@ class MainPerf(Perf):
                 - "Time" (str): The time taken for the event.
                 - "Pace (min/km)" (str): The pace of the event in minutes per kilometer.
                 - "Location" (str): The location of the event.
+                - "rank" (float | None): The rank of the event.
+                - "sub_perfs" (list[float]): A list of sub-performance times.
         """
         return {
             "Name": self.name_event,
@@ -179,6 +181,10 @@ class MainPerf(Perf):
             "Time": str(self.time),
             "Pace (min/km)": str(self.pace),
             "Location": self.location,
+            "rank": 1 - self.ratio if self.ratio is not None else None,
+            "sub_perfs": (
+                [value.time.get_seconds() for value in self.sub_perfs.values()]
+            ),
         }
 
     def _create_sub_perf(

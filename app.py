@@ -26,7 +26,25 @@ if "perfs" in st.session_state:
         st_utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
     )
 
-st.dataframe(df, hide_index=True, use_container_width=True)
+st.data_editor(
+    df,
+    column_config={
+        "rank": st.column_config.ProgressColumn(
+            "Ratio",
+            help="The ratio of the rank and the number of participants.",
+            min_value=0,
+            max_value=1,
+        ),
+        "sub_perfs": st.column_config.BarChartColumn(
+            "Intermediate times on 5k",
+            help="The intermediate times for each 5k split.",
+            y_min=0,
+            y_max=1500,
+        ),
+    },
+    hide_index=True,
+    use_container_width=True,
+)
 
 
 # Bouton pour afficher le formulaire
