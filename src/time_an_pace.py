@@ -57,8 +57,8 @@ class Time(BaseModel):
         if self.hours == 0:
             if self.minutes == 0:
                 return f"{self.seconds}s"
-            return f"{self.minutes}min{self.seconds}s"
-        return f"{self.hours}h{self.minutes}min{self.seconds}s"
+            return f"{self.minutes}min{self.seconds:02d}s"
+        return f"{self.hours}h{self.minutes:02d}min{self.seconds:02d}s"
 
     def get_minutes(self) -> float:
         """Convert time to minutes"""
