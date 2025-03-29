@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from .perfs_tracker import MainPerf, PerfsRaces
-from .time_an_pace import Time
+from src.perfs_tracker import MainPerf, PerfsRaces
+from src.time_an_pace import Time
 
 
 @st.cache_data

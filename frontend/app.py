@@ -1,9 +1,18 @@
 import streamlit as st
 
-from src import st_utils
+import utils
+
+hide_menu_style = """
+    <style>
+        [data-testid="stSidebarNav"] {
+            display: none;
+        }
+    </style>
+"""
+st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 if "perfs" not in st.session_state:
-    perfs = st_utils.load_data()
+    perfs = utils.load_data()
     st.session_state["perfs"] = perfs
     st.session_state["df"] = perfs.table()
 
@@ -13,8 +22,8 @@ st.write("This app allows you to track your performances over time.")
 df = st.session_state["df"]
 
 st.sidebar.header("Filters")
-df = st_utils.filter_location(df)
-df = st_utils.filter_distance(df)
+df = utils.filter_location(df)
+df = utils.filter_distance(df)
 if st.sidebar.button("Reset filters"):
     df = st.session_state["df"]
 
@@ -23,8 +32,10 @@ st.write("Here are your best performances:")
 
 if "perfs" in st.session_state:
     st.sidebar.dataframe(
-        st_utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
+        utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
     )
+
+df["Edit"] = [f"/edit_course?course_id={i}" for i in range(len(df))]
 
 st.data_editor(
     df,
@@ -41,6 +52,10 @@ st.data_editor(
             y_min=0,
             y_max=1500,
         ),
+        "Edit": st.column_config.LinkColumn(
+            "📝 Edit",
+            help="Click to edit this race",
+        ),
     },
     hide_index=True,
     use_container_width=True,
@@ -56,4 +71,4 @@ if st.button("➕ Ajouter une course"):
 
 if st.session_state["show_form"]:
     with st.form(key="add_course_form"):
-        st_utils.add_new_race()
+        utils.add_new_race()
