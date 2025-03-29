@@ -1,0 +1,14 @@
+[server]
+runOnSave = true
+
+[theme]
+base="dark"
+
+[browser]
+gatherUsageStats = false
+
+[general]
+pageTitle = "Mon App"
+
+[client]
+toolbarMode = "minimal"

@@ -2,14 +2,14 @@ import streamlit as st
 
 import utils
 
-hide_menu_style = """
-    <style>
-        [data-testid="stSidebarNav"] {
-            display: none;
-        }
-    </style>
-"""
-st.markdown(hide_menu_style, unsafe_allow_html=True)
+# hide_menu_style = """
+#     <style>
+#         [data-testid="stSidebarNav"] {
+#             display: none;
+#         }
+#     </style>
+# """
+# st.markdown(hide_menu_style, unsafe_allow_html=True)
 
 if "perfs" not in st.session_state:
     perfs = utils.load_data()
@@ -35,7 +35,7 @@ if "perfs" in st.session_state:
         utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
     )
 
-df["Edit"] = [f"/edit_course?course_id={i}" for i in range(len(df))]
+df["View"] = [f"/view?race_id={i}" for i in range(len(df))]
 
 st.data_editor(
     df,
@@ -52,8 +52,8 @@ st.data_editor(
             y_min=0,
             y_max=1500,
         ),
-        "Edit": st.column_config.LinkColumn(
-            "📝 Edit",
+        "View": st.column_config.LinkColumn(
+            "📝 View",
             help="Click to edit this race",
         ),
     },
@@ -62,7 +62,7 @@ st.data_editor(
 )
 
 
-# Bouton pour afficher le formulaire
+# Add new race
 if "show_form" not in st.session_state:
     st.session_state["show_form"] = False
 
@@ -72,3 +72,5 @@ if st.button("➕ Ajouter une course"):
 if st.session_state["show_form"]:
     with st.form(key="add_course_form"):
         utils.add_new_race()
+
+# View race
