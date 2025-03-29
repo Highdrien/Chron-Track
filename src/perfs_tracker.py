@@ -296,6 +296,12 @@ class PerfsRaces(BaseModel):
     def __getitem__(self, i: int) -> Perf:
         return self.perfs[i]
 
+    def __setitem__(self, i: int, perf: Perf) -> None:
+        self.perfs[i] = perf
+
+    def __delitem__(self, i: int) -> None:
+        del self.perfs[i]
+
     def add_perf(self, perf: Perf) -> None:
         """
         Adds a performance record to the tracker.
