@@ -61,6 +61,7 @@ class Perf(BaseModel):
 class MainPerf(Perf):
     num_participants: Optional[int] = None
     rank: Optional[int] = None
+    image_parcours: Optional[Path] = None
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
 
     @classmethod
@@ -71,6 +72,9 @@ class MainPerf(Perf):
         if "time" not in data:
             raise ValueError("Time is required")
         args["time"] = Time.from_str(time_str=str(data["time"]))
+
+        if "image_parcours" in data:
+            args["image_parcours"] = Path(data["image_parcours"])  # type: ignore
 
         # Convert sub_perfs to SubPerf objects
         if "sub_perfs" in data:
@@ -150,6 +154,7 @@ class MainPerf(Perf):
             "iaaf_score": self.iaaf_score,
             "rank": self.rank,
             "num_participants": self.num_participants,
+            "image_parcours": str(self.image_parcours) if self.image_parcours else None,
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs
@@ -277,7 +282,7 @@ class SubPerf(Perf):
 
 
 class PerfsRaces(BaseModel):
-    perfs: list[Perf] = []
+    perfs: list[MainPerf] = []
     gender: Optional[Gender] = None
 
     @property
@@ -286,17 +291,51 @@ class PerfsRaces(BaseModel):
             return None
         return IAAFCalculator()
 
+    @property
+    def subperfs(self) -> list[SubPerf]:
+        """
+        Returns a list of all sub-performances from the main performances.
+
+        Returns:
+            list[SubPerf]: A list of SubPerf objects.
+        """
+        sub_perfs: list[SubPerf] = []
+        for perf in self.perfs:
+            sub_perfs.extend(perf.sub_perfs.values())
+        return sub_perfs
+
+    @property
+    def race_names(self) -> list[str]:
+        return list(map(lambda x: x.name_event, self.perfs))
+
     def __len__(self) -> int:
         return len(self.perfs)
 
-    def __iter__(self) -> Iterator[Perf]:
+    def __iter__(self) -> Iterator[MainPerf]:
         for perf in self.perfs:
             yield perf
 
-    def __getitem__(self, i: int) -> Perf:
+    def __getitem__(self, i: int) -> MainPerf:
+        if i < 0 or i >= len(self.perfs):
+            raise IndexError("Index out of range")
         return self.perfs[i]
 
-    def add_perf(self, perf: Perf) -> None:
+    def __setitem__(self, i: int, edited_perf: MainPerf) -> None:
+        if i < 0 or i >= len(self.perfs):
+            raise IndexError("Index out of range")
+        if not isinstance(edited_perf, MainPerf):
+            raise TypeError(
+                "Edited performance must be an instance of Perf"
+                + f" but got {type(edited_perf)}"
+            )
+        self.perfs[i] = edited_perf
+
+    def __delitem__(self, i: int) -> None:
+        if i < 0 or i >= len(self.perfs):
+            raise IndexError("Index out of range")
+        del self.perfs[i]
+
+    def add_perf(self, perf: MainPerf) -> None:
         """
         Adds a performance record to the tracker.
 
@@ -304,13 +343,13 @@ class PerfsRaces(BaseModel):
         are also added to the tracker.
 
         Args:
-            perf (Perf): The performance record to be added.
+            perf (MainPerf): The performance record to be added.
         """
+        if not isinstance(perf, MainPerf):
+            raise TypeError(
+                "Performance must be an instance of MainPerf but got {type(perf)}"
+            )
         self.perfs.append(perf)
-
-        if isinstance(perf, MainPerf):
-            for sub_perf in perf.sub_perfs.values():
-                self.perfs.append(sub_perf)
 
     def get_personal_best(self, distance: float) -> Optional[Perf]:
         """
@@ -322,9 +361,8 @@ class PerfsRaces(BaseModel):
         Returns:
             Optional[Perf]: The personal best performance if found, otherwise None.
         """
-        filtered_perfs = list(
-            filter(lambda perf: perf.distance == distance, self.perfs)
-        )
+        all_perfs: list[Perf] = self.perfs + self.subperfs
+        filtered_perfs = list(filter(lambda perf: perf.distance == distance, all_perfs))
         if len(filtered_perfs) == 0:
             return None
         return min(filtered_perfs, key=lambda perf: perf.time)
@@ -337,7 +375,8 @@ class PerfsRaces(BaseModel):
             dict[float, Perf]: A dictionary with the distance as key and the
                 personal best performance as value.
         """
-        runned_distances = sorted(list(set(perf.distance for perf in self.perfs)))
+        all_perfs: list[Perf] = self.perfs + self.subperfs
+        runned_distances = sorted(list(set(perf.distance for perf in all_perfs)))
         all_pb = {
             distance: self.get_personal_best(distance) for distance in runned_distances
         }
@@ -356,7 +395,8 @@ class PerfsRaces(BaseModel):
         if self.iaaf is None or self.gender is None:
             print("IAAF scores cannot be computed without gender information")
             return None
-        for perf in self.perfs:
+        all_perfs: list[Perf] = self.perfs + self.subperfs
+        for perf in all_perfs:
             event = perf.get_event()
             if event is None:
                 print(f"Event not found for distance {perf.distance}")
@@ -367,7 +407,7 @@ class PerfsRaces(BaseModel):
             perf.iaaf_score = iaaf_score
             print(f"IAAF score for {perf} is {iaaf_score}")
 
-    def save_to_json(self, filepath: Path) -> None:
+    def save_to_json(self, filepath: Path = Path("data/perfs.json")) -> None:
         """
         Save the performance data to a JSON file.
 
@@ -377,13 +417,11 @@ class PerfsRaces(BaseModel):
         Args:
             filepath (Path): The path to the file where the JSON data will be saved.
         """
-        main_perfs: list[MainPerf] = list(
-            filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
-        )
-        data = [perf.to_dict() for perf in main_perfs]
+        data = [perf.to_dict() for perf in self.perfs]
         json.dump(data, open(filepath, "w"), indent=4)
+        print(f"Save {filepath}")
 
-    def load_from_json(self, filepath: Path) -> None:
+    def load_from_json(self, filepath: Path = Path("data/perfs.json")) -> None:
         """
         Load performance data from a JSON file and add it to the tracker.
 
@@ -412,10 +450,7 @@ class PerfsRaces(BaseModel):
         Returns:
             pd.DataFrame: A DataFrame with the performance data.
         """
-        mainperfs: list[MainPerf] = list(
-            filter(lambda perf: isinstance(perf, MainPerf), self.perfs)
-        )
-        data = list(map(lambda x: x.get_basic_info(), mainperfs))
+        data = list(map(lambda x: x.get_basic_info(), self.perfs))
         data.sort(key=lambda x: str(x.get("Date")))
 
         return pd.DataFrame(data)
