@@ -74,7 +74,7 @@ class MainPerf(Perf):
         args["time"] = Time.from_str(time_str=str(data["time"]))
 
         if "image_parcours" in data:
-            args["image_parcours"] = Path(data["image_parcours"])
+            args["image_parcours"] = Path(data["image_parcours"])  # type: ignore
 
         # Convert sub_perfs to SubPerf objects
         if "sub_perfs" in data:
@@ -303,6 +303,10 @@ class PerfsRaces(BaseModel):
         for perf in self.perfs:
             sub_perfs.extend(perf.sub_perfs.values())
         return sub_perfs
+
+    @property
+    def race_names(self) -> list[str]:
+        return list(map(lambda x: x.name_event, self.perfs))
 
     def __len__(self) -> int:
         return len(self.perfs)

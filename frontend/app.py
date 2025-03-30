@@ -34,7 +34,7 @@ if "perfs" in st.session_state:
         utils.get_pbs_as_dataframe(), hide_index=True, use_container_width=True
     )
 
-df["View"] = [f"/view?race_id={i}" for i in range(len(df))]
+# df["View"] = [f"/view?race_id={i}" for i in range(len(df))]
 
 st.data_editor(
     df,
@@ -51,10 +51,10 @@ st.data_editor(
             y_min=0,
             y_max=1500,
         ),
-        "View": st.column_config.LinkColumn(
-            "📝 View",
-            help="Click to edit this race",
-        ),
+        # "View": st.column_config.LinkColumn(
+        #     "📝 View",
+        #     help="Click to edit this race",
+        # ),
     },
     hide_index=True,
     use_container_width=True,
