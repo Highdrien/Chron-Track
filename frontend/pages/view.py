@@ -25,7 +25,8 @@ if 0 <= race_id < len(perfs):
     st.markdown(f"## {perf.distance} km - `{perf.time}` on *{perf.date.date()}*")
     st.markdown(f"- Pace: `{perf.pace}` min/km ({perf.pace.kmh:.2f} km/h)")
     st.markdown(
-        f"- Rank: {perf.rank} / {perf.num_participants} participants (top {perf.ratio:.2%})"
+        f"- Rank: {perf.rank} / {perf.num_participants} participants"
+        + f" (top {perf.ratio:.2%})"
     )
     if perf.url_results:
         st.markdown(f"- Results: {perf.url_results}")
