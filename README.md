@@ -25,6 +25,7 @@ uv sync
 
 ### Running the Streamlit App
 ```bash
+export PYTHONPATH=$PYTHONPATH:$(pwd)
 uv run streamlit run app.py
 ```
 

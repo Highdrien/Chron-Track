@@ -1,24 +1,22 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 from frontend import utils
 from src.perfs_tracker import MainPerf, PerfsRaces
 
 # Récupérer l'ID de la course depuis l'URL
 race_id: int = int(st.query_params.get("race_id", None))
-print(f"race id: {race_id}")
-
 
 if "perfs" not in st.session_state:
     perfs = utils.load_data()
     st.session_state["perfs"] = perfs
-    st.session_state["df"] = perfs.table()
+if "show_form_edit" not in st.session_state:
+    st.session_state["show_form_edit"] = False
 
-df: pd.DataFrame = st.session_state["df"]
+
 perfs: PerfsRaces = st.session_state["perfs"]
 
-# Vérifier si l'ID est valide
-if 0 <= race_id < len(df):
+if 0 <= race_id < len(perfs):
     perf: MainPerf = perfs[race_id]
     st.write(f"{perf}")
 
@@ -34,16 +32,21 @@ if 0 <= race_id < len(df):
     if perf.url_strava:
         st.markdown(f"- Strava: {perf.url_strava}")
 
-    col1, col2 = st.columns(2)
+    if perf.image_parcours:
+        st.image(perf.image_parcours, caption="Parcours", width=700)
 
-    with col1:
-        if st.button("✍️ Edit"):
-            pass
+    if st.button("✍️ Edit"):
+        st.session_state["show_form_edit"] = not st.session_state["show_form_edit"]
 
-    with col2:
+    if st.session_state["show_form_edit"]:
+        with st.form(key="add_course_form"):
+            utils.edit_race(perf, race_id=race_id)
+
+    _, right_col = st.columns([5, 1])
+    with right_col:
         if st.button("❌ Delete"):
             st.write("Not implemented yet")
-            pass
+
 
 else:
     st.error("❌ Course introuvable !")

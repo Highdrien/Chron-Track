@@ -61,6 +61,7 @@ class Perf(BaseModel):
 class MainPerf(Perf):
     num_participants: Optional[int] = None
     rank: Optional[int] = None
+    image_parcours: Optional[Path] = None
     sub_perfs: dict[tuple[float, float], "SubPerf"] = {}
 
     @classmethod
@@ -296,10 +297,16 @@ class PerfsRaces(BaseModel):
     def __getitem__(self, i: int) -> Perf:
         return self.perfs[i]
 
-    def __setitem__(self, i: int, perf: Perf) -> None:
-        self.perfs[i] = perf
+    def __setitem__(self, i: int, edited_perf: Perf) -> None:
+        if i < 0 or i >= len(self.perfs):
+            raise IndexError("Index out of range")
+        if not isinstance(edited_perf, Perf):
+            raise TypeError("Edited performance must be an instance of Perf")
+        self.perfs[i] = edited_perf
 
     def __delitem__(self, i: int) -> None:
+        if i < 0 or i >= len(self.perfs):
+            raise IndexError("Index out of range")
         del self.perfs[i]
 
     def add_perf(self, perf: Perf) -> None:
@@ -373,7 +380,7 @@ class PerfsRaces(BaseModel):
             perf.iaaf_score = iaaf_score
             print(f"IAAF score for {perf} is {iaaf_score}")
 
-    def save_to_json(self, filepath: Path) -> None:
+    def save_to_json(self, filepath: Path = Path("data/perfs.json")) -> None:
         """
         Save the performance data to a JSON file.
 
@@ -389,7 +396,7 @@ class PerfsRaces(BaseModel):
         data = [perf.to_dict() for perf in main_perfs]
         json.dump(data, open(filepath, "w"), indent=4)
 
-    def load_from_json(self, filepath: Path) -> None:
+    def load_from_json(self, filepath: Path = Path("data/perfs.json")) -> None:
         """
         Load performance data from a JSON file and add it to the tracker.
 

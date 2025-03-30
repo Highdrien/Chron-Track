@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
@@ -288,3 +289,33 @@ class TestPerfOfAllTime:
 
         assert filepath.exists()
         filepath.unlink()
+
+    def test_del_perf(self):
+        n = len(self.perfs_of_all_time)
+        names = list(map(lambda x: x.name_event, self.perfs_of_all_time))
+        for i in range(n):
+            perfs = deepcopy(self.perfs_of_all_time)
+            del perfs[i]
+            assert len(perfs) == n - 1
+            new_names = list(map(lambda x: x.name_event, perfs))
+            assert names[i] not in new_names
+            assert names[:i] + names[i + 1 :] == new_names
+
+    def test_set_item(self):
+        new_name = "new name"
+        time = Time(minutes=30, seconds=0)
+        new_distance = 5
+
+        for i in range(len(self.perfs_of_all_time)):
+            perfs = deepcopy(self.perfs_of_all_time)
+            perf_to_edit = deepcopy(perfs[i])
+            new_perf = perf_to_edit
+            new_perf.name_event = new_name
+            new_perf.time = time
+            new_perf.distance = new_distance
+            perfs.__setitem__(i, new_perf)
+
+            # Check that the perf has been updated
+            assert perfs[i].name_event == new_name
+            assert perfs[i].time == time
+            assert perfs[i].distance == new_distance

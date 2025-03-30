@@ -87,7 +87,7 @@ def add_new_race():
         )
 
     distance = st.number_input(
-        "Distance (km)", min_value=0.1, max_value=500.0, value=10.0, step=0.1
+        "Distance (km)", min_value=0.1, max_value=500.0, value=10.0, step=1.0
     )
 
     st.subheader("Additional information (optional):")
@@ -121,16 +121,96 @@ def add_new_race():
         )
         perfs: PerfsRaces = st.session_state["perfs"]
         perfs.add_perf(new_perf)
-        st.session_state["df"] = perfs.table()
 
-        if perfs:
-            perfs.save_to_json(Path("data/perfs.json"))
+        perfs.save_to_json(Path("data/perfs.json"))
 
         st.success("✅ Race added successfully!")
 
         # Masquer le formulaire après ajout
         st.session_state["show_form"] = False
         st.rerun()
+
+
+def edit_race(perf: MainPerf, race_id: int) -> bool:
+    st.subheader("Edit the race:")
+    name = st.text_input("Race name", value=perf.name_event)
+    location = st.text_input("City", value=perf.location)
+    date = st.date_input("Race date", value=perf.date.date())
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        hours = st.number_input(
+            "Hours", min_value=0, max_value=78, value=perf.time.hours, step=1
+        )
+    with col2:
+        minutes = st.number_input(
+            "Minutes", min_value=0, max_value=59, value=perf.time.minutes, step=1
+        )
+    with col3:
+        seconds = st.number_input(
+            "Secondes", min_value=0, max_value=59, value=perf.time.seconds, step=1
+        )
+
+    distance = st.number_input(
+        "Distance (km)", min_value=0.1, max_value=500.0, value=perf.distance, step=1.0
+    )
+
+    st.subheader("Additional information (optional):")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        rank = st.number_input(
+            "Rank (optional)", min_value=0, value=perf.rank if perf.rank else 0, step=1
+        )
+    with col2:
+        num_participants = st.number_input(
+            "Number of participants (optional)",
+            min_value=0,
+            value=perf.num_participants if perf.num_participants else 0,
+            step=1,
+        )
+
+    url_results = st.text_input(
+        "URL results (optional)", value=perf.url_results if perf.url_results else ""
+    )
+    url_strava = st.text_input(
+        "URL Strava (optional)", value=perf.url_strava if perf.url_strava else ""
+    )
+    image_parcours = st.file_uploader(
+        "Upload parcours image (optional)", type=["jpg", "jpeg", "png"]
+    )
+
+    submit_button = st.form_submit_button(label="✅ Add the race to the database")
+
+    if submit_button:
+        # Ajouter la nouvelle course au DataFrame de session_state
+        new_time = Time(hours=hours, minutes=minutes, seconds=seconds)
+        edited_perf = MainPerf(
+            name_event=name,
+            date=date,
+            distance=distance,
+            time=new_time,
+            location=location,
+            rank=rank if rank != 0 else perf.rank,
+            num_participants=(
+                num_participants if num_participants != 0 else perf.num_participants
+            ),
+            url_results=url_results,
+            url_strava=url_strava,
+            image_parcours=image_parcours if image_parcours else perf.image_parcours,
+        )
+        perfs: PerfsRaces = st.session_state["perfs"]
+        perfs.__setitem__(i=race_id, edited_perf=edited_perf)
+        st.write(f"Edited performance: {perfs[race_id]}")
+
+        perfs.save_to_json(Path("data/perfs.json"))
+
+        st.success("✅ Race added successfully!")
+
+        # Update PersRaces
+        st.session_state["perfs"] = perfs
+        # Mask the form after adding
+        st.session_state["show_form_edit"] = False
 
 
 def get_pbs_as_dataframe() -> pd.DataFrame:
