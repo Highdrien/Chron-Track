@@ -154,7 +154,7 @@ class MainPerf(Perf):
             "iaaf_score": self.iaaf_score,
             "rank": self.rank,
             "num_participants": self.num_participants,
-            "image_parcours": str(self.image_parcours),
+            "image_parcours": str(self.image_parcours) if self.image_parcours else None,
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs
