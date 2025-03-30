@@ -13,7 +13,6 @@ if "perfs" not in st.session_state:
 if "show_form_edit" not in st.session_state:
     st.session_state["show_form_edit"] = False
 
-
 perfs: PerfsRaces = st.session_state["perfs"]
 
 if 0 <= race_id < len(perfs):
@@ -25,7 +24,7 @@ if 0 <= race_id < len(perfs):
     else:
         st.title(f"{perf.name_event} - {perf.location}")
     st.markdown(f"## {perf.distance} km - `{perf.time}` on *{perf.date.date()}*")
-    st.markdown(f"- Pace: `{perf.pace}` min/kim ({perf.pace.kmh:.2f} km/h)")
+    st.markdown(f"- Pace: `{perf.pace}` min/km ({perf.pace.kmh:.2f} km/h)")
     st.markdown(f"- Rank: {perf.rank} / {perf.num_participants} participants")
     if perf.url_results:
         st.markdown(f"- Results: {perf.url_results}")
@@ -40,7 +39,14 @@ if 0 <= race_id < len(perfs):
 
     if st.session_state["show_form_edit"]:
         with st.form(key="add_course_form"):
-            utils.edit_race(perf, race_id=race_id)
+            response = utils.edit_race(perf, race_id=race_id)
+            if response:
+                print("reload data")
+                del st.session_state["perfs"]
+                perfs = utils.load_data()
+                st.session_state["perfs"] = perfs
+                print("reload data done")
+                print(perfs[race_id].url_strava)
 
     _, right_col = st.columns([5, 1])
     with right_col:

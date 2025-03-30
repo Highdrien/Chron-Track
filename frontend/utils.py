@@ -201,16 +201,18 @@ def edit_race(perf: MainPerf, race_id: int) -> bool:
         )
         perfs: PerfsRaces = st.session_state["perfs"]
         perfs.__setitem__(i=race_id, edited_perf=edited_perf)
-        st.write(f"Edited performance: {perfs[race_id]}")
+        st.write(f"Edited performance: {perfs[race_id]} (url_strava: {url_strava})")
 
         perfs.save_to_json(Path("data/perfs.json"))
 
         st.success("✅ Race added successfully!")
-
-        # Update PersRaces
-        st.session_state["perfs"] = perfs
-        # Mask the form after adding
         st.session_state["show_form_edit"] = False
+        st.rerun()
+
+        # Mask the form after adding
+
+        return True
+    return False
 
 
 def get_pbs_as_dataframe() -> pd.DataFrame:

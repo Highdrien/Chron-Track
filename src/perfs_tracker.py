@@ -300,8 +300,11 @@ class PerfsRaces(BaseModel):
     def __setitem__(self, i: int, edited_perf: Perf) -> None:
         if i < 0 or i >= len(self.perfs):
             raise IndexError("Index out of range")
-        if not isinstance(edited_perf, Perf):
-            raise TypeError("Edited performance must be an instance of Perf")
+        if not issubclass(type(edited_perf), Perf):
+            raise TypeError(
+                "Edited performance must be an instance of Perf"
+                + f" but got {type(edited_perf)}"
+            )
         self.perfs[i] = edited_perf
 
     def __delitem__(self, i: int) -> None:
@@ -395,6 +398,7 @@ class PerfsRaces(BaseModel):
         )
         data = [perf.to_dict() for perf in main_perfs]
         json.dump(data, open(filepath, "w"), indent=4)
+        print(f"Save {filepath}")
 
     def load_from_json(self, filepath: Path = Path("data/perfs.json")) -> None:
         """
