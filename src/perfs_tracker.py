@@ -73,6 +73,9 @@ class MainPerf(Perf):
             raise ValueError("Time is required")
         args["time"] = Time.from_str(time_str=str(data["time"]))
 
+        if "image_parcours" in data:
+            args["image_parcours"] = Path(data["image_parcours"])
+
         # Convert sub_perfs to SubPerf objects
         if "sub_perfs" in data:
             sub_perfs = {}
@@ -151,6 +154,7 @@ class MainPerf(Perf):
             "iaaf_score": self.iaaf_score,
             "rank": self.rank,
             "num_participants": self.num_participants,
+            "image_parcours": str(self.image_parcours),
             "sub_perfs": (
                 [sub_perf.to_dict() for sub_perf in self.sub_perfs.values()]
                 if self.sub_perfs

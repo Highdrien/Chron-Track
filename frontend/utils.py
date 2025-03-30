@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 import streamlit as st
@@ -179,6 +180,7 @@ def edit_race(perf: MainPerf, race_id: int) -> bool:
     image_parcours = st.file_uploader(
         "Upload parcours image (optional)", type=["jpg", "jpeg", "png"]
     )
+    image_parcours = save_image_parcours(image_parcours, perf.name_event)
 
     submit_button = st.form_submit_button(label="✅ Add the race to the database")
 
@@ -213,6 +215,23 @@ def edit_race(perf: MainPerf, race_id: int) -> bool:
 
         return True
     return False
+
+
+def save_image_parcours(image_parcours, nave_event: str) -> Optional[Path]:
+    if image_parcours is None:
+        return None
+    # Create target path: data/<name>/parcours.png
+    target_path = Path("data") / nave_event.replace(" ", "_").lower()
+    target_path.mkdir(parents=True, exist_ok=True)
+
+    image_save_path = target_path / "parcours.png"
+
+    # Save the uploaded file
+    with open(image_save_path, "wb") as f:
+        f.write(image_parcours.read())
+
+    st.success(f"Image saved to {image_save_path}")
+    return image_save_path
 
 
 def get_pbs_as_dataframe() -> pd.DataFrame:
