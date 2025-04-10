@@ -67,6 +67,23 @@ def filter_distance(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_new_race():
+    if "add_new_race_step" not in st.session_state:
+        st.session_state["new_race_step"] = 1
+
+    if st.session_state["new_race_step"] == 1:
+        with st.form("add_course_form"):
+            get_main_info()
+
+    if st.session_state["new_race_step"] == 2:
+        with st.form("add intermediate times"):
+            new_perf: MainPerf = st.session_state.get("new_perf", None)
+            if new_perf is None:
+                st.error("No performance found")
+                return
+            add_intermediate_times(new_perf)
+
+
+def get_main_info() -> None:
     """
     Displays a form to add a new race event with details such as name, location, time,
     and distance. On form submission, the new race is added to the session state
@@ -104,6 +121,8 @@ def add_new_race():
     url_results = st.text_input("URL results (optional)")
     url_strava = st.text_input("URL Strava (optional)")
 
+    intermediate_times = st.checkbox("Add intermediate times (optional)", value=False)
+
     submit_button = st.form_submit_button(label="✅ Add the race to the database")
 
     if submit_button:
@@ -123,6 +142,36 @@ def add_new_race():
         perfs: PerfsRaces = st.session_state["perfs"]
         perfs.add_perf(new_perf)
 
+        if intermediate_times:
+            st.session_state["new_race_step"] = 2
+            st.session_state["new_perf"] = new_perf
+            add_intermediate_times(new_perf)
+        else:
+            perfs.save_to_json(Path("data/perfs.json"))
+
+            st.success("✅ Race added successfully!")
+
+            # Masquer le formulaire après ajout
+            st.session_state["show_form"] = False
+            st.rerun()
+
+
+def add_intermediate_times(perf: MainPerf) -> None:
+    distance = int(perf.distance)
+    st.subheader("Intermediate times (optional):")
+    intermedaire_distance = 5
+    number_splits = distance // intermedaire_distance
+    for i in range(number_splits):
+        st.number_input(
+            f"Intermediate time {intermedaire_distance * (i + 1)} km",
+            min_value=0,
+            max_value=int(distance),
+        )
+
+    submit_button = st.form_submit_button(label="✅ Add the intermediate times")
+    if submit_button:
+        st.session_state["new_race_step"] = 3
+        perfs: PerfsRaces = st.session_state["perfs"]
         perfs.save_to_json(Path("data/perfs.json"))
 
         st.success("✅ Race added successfully!")

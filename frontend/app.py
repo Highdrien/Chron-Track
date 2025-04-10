@@ -64,5 +64,4 @@ if st.button("➕ Ajouter une course"):
     st.session_state["show_form"] = not st.session_state["show_form"]
 
 if st.session_state["show_form"]:
-    with st.form(key="add_course_form"):
-        utils.add_new_race()
+    utils.add_new_race()
