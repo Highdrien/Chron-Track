@@ -1,0 +1,61 @@
+[project]
+name = "backend-chron-track"
+version = "0.1.0"
+description = "Django backend for chron track"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=6.0.4",
+    "django-ninja>=1.6.2",
+    "python-decouple>=3.8",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs>=6.0.3",
+    "mypy>=1.20.1",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pytest-django>=4.12.0",
+    "ruff>=0.15.11",
+]
+
+[tool.ruff]
+exclude = [".git", "__pycache__", ".venv", "migrations"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+DJANGO_SETTINGS_MODULE = "chron_track.settings"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+
+[tool.django-stubs]
+django_settings_module = "chron_track.settings"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+mypy_path = "src:typings"
+explicit_package_bases = true
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "src/chron_track/*",
+    "*/migrations/*",
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/management/commands/*",
+    "*/manage.py",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "*/admin.py",
+]
