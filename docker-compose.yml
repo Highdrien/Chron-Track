@@ -1,0 +1,57 @@
+name: chron-track
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    command: sh -c "python src/manage.py runserver 0.0.0.0:8000"
+    restart: "no"
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=chron_track
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_HOST=db
+      - DB_PORT=5432
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/src:/backend-chron-track/src
+      - ./backend/pyproject.toml:/backend-chron-track/pyproject.toml:ro
+      - ./logs/:/backend-chron-track/logs/
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [
+          "CMD",
+          "python",
+          "-c",
+          "from urllib.request import urlopen; urlopen('http://localhost:8000/api/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+  
+  db:
+    image: postgres:18
+    restart: "no"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=chron_track
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD","pg_isready","-U","${DB_USER:-postgres}","-d","chron_track"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
+
+volumes:
+  postgres_data:
