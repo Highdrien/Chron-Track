@@ -19,15 +19,19 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 from ninja.security import django_auth
+from ninja_jwt.authentication import JWTAuth
+from ninja_jwt.routers.obtain import obtain_pair_router
+from ninja_jwt.routers.verify import verify_router
 
-from races.views import router as races_router
+from accounts.api import router as auth_router
+from races.api import router as races_router
 
 api = NinjaAPI(
     title="Chron Track API",
     version="0.1.0",
     description="API to manage Chron Track",
     docs_url="/docs",
-    auth=django_auth,
+    auth=[JWTAuth(), django_auth],
 )
 
 
@@ -36,6 +40,9 @@ def health_check(request):
     return {"status": "ok"}
 
 
+api.add_router("/api/auth/token", obtain_pair_router, tags=["Auth"])
+api.add_router("/api/auth/token", verify_router, tags=["Auth"])
+api.add_router("/api/auth", auth_router)
 api.add_router("/api/races", races_router)
 
 

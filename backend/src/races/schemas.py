@@ -73,3 +73,7 @@ class RaceFilter(FilterSchema):
 
 class Message(Schema):
     detail: str
+
+
+class RecordsOut(Schema):
+    records: dict[str, RaceOut | None]

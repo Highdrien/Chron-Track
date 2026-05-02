@@ -2,15 +2,21 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import Client
 
 from races.models import Race
 
+User = get_user_model()
+
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(username="runner", password="testpass123")
+    return User.objects.create_user(
+        username="runner",
+        password="testpass123",
+        email="runner@test.com",
+    )
 
 
 @pytest.fixture

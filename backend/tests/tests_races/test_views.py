@@ -23,9 +23,14 @@ class TestListRaces:
         assert data["items"][0]["name"] == "Trail des Templiers"
 
     def test_list_excludes_other_users(self, auth_client, race, user):
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
 
-        other = User.objects.create_user(username="other", password="other123")
+        User = get_user_model()
+        other = User.objects.create_user(
+            username="other",
+            password="other123",
+            email="other@test.com",
+        )
         Race.objects.create(
             user=other,
             name="Other Race",
@@ -96,9 +101,14 @@ class TestGetRace:
         assert resp.status_code == 404
 
     def test_get_other_users_race(self, auth_client, user):
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
 
-        other = User.objects.create_user(username="other2", password="other123")
+        User = get_user_model()
+        other = User.objects.create_user(
+            username="other2",
+            password="other123",
+            email="other2@test.com",
+        )
         other_race = Race.objects.create(
             user=other,
             name="Secret Race",
@@ -176,9 +186,14 @@ class TestDeleteRace:
         assert resp.status_code == 404
 
     def test_delete_other_users_race(self, auth_client, user):
-        from django.contrib.auth.models import User
+        from django.contrib.auth import get_user_model
 
-        other = User.objects.create_user(username="other3", password="other123")
+        User = get_user_model()
+        other = User.objects.create_user(
+            username="other3",
+            password="other123",
+            email="other3@test.com",
+        )
         other_race = Race.objects.create(
             user=other,
             name="Not Mine",
