@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       target: development
-    command: sh -c "python src/manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python src/manage.py migrate && python src/manage.py runserver 0.0.0.0:8000"
     restart: "no"
     ports:
       - "8000:8000"
@@ -35,7 +35,22 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
-  
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    restart: "no"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+
   db:
     image: postgres:18
     restart: "no"
