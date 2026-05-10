@@ -29,6 +29,7 @@ dependencies = [
     { name = "django-cors-headers" },
     { name = "django-ninja" },
     { name = "django-ninja-jwt" },
+    { name = "fitparse" },
     { name = "gunicorn" },
     { name = "psycopg", extra = ["binary"] },
     { name = "python-decouple" },
@@ -52,6 +53,7 @@ requires-dist = [
     { name = "django-cors-headers", specifier = ">=4.9.0" },
     { name = "django-ninja", specifier = ">=1.6.2" },
     { name = "django-ninja-jwt", specifier = ">=5.4.4" },
+    { name = "fitparse", specifier = ">=1.2.0" },
     { name = "gunicorn", specifier = ">=25.3.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.3" },
     { name = "python-decouple", specifier = ">=3.8" },
@@ -379,6 +381,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/b5/fe/997687a931ab51049
 wheels = [
     { url = "https://files.pythonhosted.org/packages/81/47/dd9a212ef6e343a6857485ffe25bba537304f1913bdbed446a23f7f592e1/filelock-3.29.0-py3-none-any.whl", hash = "sha256:96f5f6344709aa1572bbf631c640e4ebeeb519e08da902c39a001882f30ac258", size = 39812, upload-time = "2026-04-19T15:39:08.752Z" },
 ]
+
+[[package]]
+name = "fitparse"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/61/ed/5637fe96c56d55dfa6317ab16745f9a83ef2690d093cee8f0b59f983675f/fitparse-1.2.0.tar.gz", hash = "sha256:2d691022452dea6dabad13cc6e017ca467fe8a3a895cd3ac67a50a7bb716b4a9", size = 65716, upload-time = "2020-09-07T03:27:21.926Z" }
 
 [[package]]
 name = "gunicorn"

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "ninja_jwt",
     "accounts",
     "races",
+    "activity",
 ]
 
 MIDDLEWARE = [

@@ -9,6 +9,7 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "django-ninja>=1.6.2",
     "django-ninja-jwt>=5.4.4",
+    "fitparse>=1.2.0",
     "gunicorn>=25.3.0",
     "psycopg[binary]>=3.3.3",
     "python-decouple>=3.8",
@@ -36,6 +37,10 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 DJANGO_SETTINGS_MODULE = "chron_track.settings"
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:fitparse",
+]
 addopts = [
     "-v",
     "--strict-markers",
