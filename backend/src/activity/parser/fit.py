@@ -28,13 +28,36 @@ def _make_aware(dt: datetime | None) -> datetime | None:
     return dt
 
 
-SPORT_TYPE_MAP = {
-    "running": "running",
+RUNNING_SPORTS: set[str] = {"running"}
+
+RUNNING_SUB_SPORT_MAP: dict[str, str] = {
+    "generic": "running",
     "trail_running": "trail",
     "track": "track",
     "treadmill": "treadmill",
     "indoor_running": "treadmill",
 }
+
+DISTANCE_LABELS = [
+    (42000, "Marathon"),
+    (21000, "Semi-marathon"),
+    (15000, "15 km"),
+    (10000, "10 km"),
+    (5000, "5 km"),
+]
+
+
+def _build_name(distance: Decimal, start_time: datetime, duration: timedelta) -> str:
+    for threshold, label in DISTANCE_LABELS:
+        if distance >= threshold * Decimal("0.95"):
+            total_s = int(duration.total_seconds())
+            h, rem = divmod(total_s, 3600)
+            m, s = divmod(rem, 60)
+            time_str = f"{h}h{m:02d}" if h else f"{m}min{s:02d}s"
+            return f"{label} - {time_str}"
+
+    km = (distance / Decimal("1000")).quantize(Decimal("0.1"))
+    return f"Course {km} km - {start_time:%d/%m/%Y}"
 
 
 def _build_external_id(
@@ -58,10 +81,12 @@ def _parse_session(fit: fitparse.FitFile) -> ActivityData:
         serial_number = _get_field(file_id, "serial_number")
         break
 
-    sport_name = None
-    for sport in fit.get_messages("sport"):
-        sport_name = _get_field(sport, "name")
-        break
+    raw_sport = str(_get_field(session, "sport") or "")
+    if raw_sport not in RUNNING_SPORTS:
+        raise ValueError(f"Not a running activity (sport={raw_sport}), skipping")
+
+    raw_sub_sport = str(_get_field(session, "sub_sport") or "generic")
+    sport_type = RUNNING_SUB_SPORT_MAP.get(raw_sub_sport, "running")
 
     start_time = _make_aware(_get_field(session, "start_time"))
     if start_time is None:
@@ -79,13 +104,7 @@ def _parse_session(fit: fitparse.FitFile) -> ActivityData:
         raise ValueError("No total_distance in session")
     distance = Decimal(str(distance_m)).quantize(Decimal("0.01"))
 
-    raw_sport = _get_field(session, "sport") or ""
-    raw_sub_sport = _get_field(session, "sub_sport") or ""
-    sport_type = SPORT_TYPE_MAP.get(
-        raw_sub_sport, SPORT_TYPE_MAP.get(raw_sport, "running")
-    )
-
-    name = sport_name or raw_sport or "Activity"
+    name = _build_name(distance, start_time, duration)
 
     elevation_gain = _get_field(session, "total_ascent")
     elevation_loss = _get_field(session, "total_descent")

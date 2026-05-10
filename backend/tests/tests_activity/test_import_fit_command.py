@@ -38,7 +38,7 @@ class TestImportFitCommand:
         assert Activity.objects.count() == 1
         activity = Activity.objects.first()
         assert activity.user == user
-        assert activity.name == "Course"
+        assert "Semi-marathon" in activity.name
 
     def test_import_duplicate_skips(self, user, semi_fit_path):
         call_command("import_fit", str(semi_fit_path), str(user.pk))

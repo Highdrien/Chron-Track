@@ -61,8 +61,18 @@ def _save_activity(user: User, data: ActivityData) -> Activity:
     return activity
 
 
-def import_fit_file(user: User, source: str | Path | BinaryIO) -> Activity:
+def import_fit_file(
+    user: User,
+    source: str | Path | BinaryIO,
+    *,
+    name: str | None = None,
+) -> Activity:
     """Parse a FIT file and save it as an Activity.
+
+    Args:
+        user: The user who owns this activity.
+        source: Path to a .fit/.fit.gz file, or an open binary stream.
+        name: Override the auto-generated activity name (e.g. from Strava CSV).
 
     Raises:
         ActivityAlreadyExists: if an activity with the same external_id exists.
@@ -70,4 +80,6 @@ def import_fit_file(user: User, source: str | Path | BinaryIO) -> Activity:
         FileNotFoundError: if the file path doesn't exist.
     """
     data = parse_fit(source)
+    if name:
+        data.name = name
     return _save_activity(user, data)

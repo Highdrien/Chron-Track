@@ -37,7 +37,7 @@ class TestImportFitFile:
         assert activity.pk is not None
         assert activity.user == user
         assert activity.source == "fit"
-        assert activity.name == "Course"
+        assert "Semi-marathon" in activity.name
         assert activity.sport_type == "running"
         assert activity.distance > 21000
         assert activity.avg_hr == 166

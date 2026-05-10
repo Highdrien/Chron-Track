@@ -33,7 +33,8 @@ class TestParseFit:
     def test_parse_returns_activity_data(self, semi_fit_path: Path):
         result = parse_fit(semi_fit_path)
 
-        assert result.name == "Course"
+        assert "Semi-marathon" in result.name
+        assert "1h25" in result.name
         assert result.sport_type == "running"
         assert result.distance > Decimal("21000")
         assert result.duration > timedelta(hours=1)
@@ -74,7 +75,7 @@ class TestParseFit:
     def test_parse_gz_file(self, semi_fit_gz: Path):
         result = parse_fit(semi_fit_gz)
 
-        assert result.name == "Course"
+        assert "Semi-marathon" in result.name
         assert result.distance > Decimal("21000")
         assert len(result.laps) == 22
 
@@ -82,7 +83,7 @@ class TestParseFit:
         with open(semi_fit_path, "rb") as f:
             result = parse_fit(f)
 
-        assert result.name == "Course"
+        assert "Semi-marathon" in result.name
         assert result.distance > Decimal("21000")
 
     def test_parse_nonexistent_file_raises(self):

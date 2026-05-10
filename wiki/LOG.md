@@ -1,5 +1,8 @@
 # Wiki Log
 
+## 2026-05-10 (3)
+- Updated modules/activity.md: added Strava CSV parser, bulk_import_fit now reads activities.csv, FIT parser rejects non-running and auto-generates names
+
 ## 2026-05-10 (2)
 - Created modules/activity.md: FIT import, Activity/ActivityLap models, parser, services, management command
 - Created decisions/fit-format.md: FIT chosen over GPX/TCX for compactness and data richness
